@@ -12,6 +12,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js"></script>
+    <script src="route_map.js"></script>
 
 </head>
 
@@ -19,7 +20,7 @@
     <div class="container">
         <div class="form">
             <h1>Select your route:</h1>
-            <form method="get" action="select_route.php" id="select_route">            
+            <form id="select_route">            
                 <select name="bus_route">
                     <option value="">Bus Routes</option>
                     <option value="2">Route 2</option>
@@ -161,6 +162,7 @@
             </form>
         </div>
     </div>
+    <div id="map"></div>
 </body>
 
 </html>
