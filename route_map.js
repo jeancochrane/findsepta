@@ -4,14 +4,12 @@ $(function() {
     var map;
     $("form").submit(form_submit);
 
-
     function form_submit(e) {
         e.preventDefault();
         // get route selection from form
         selected_routes = $(this).serializeArray();
         console.log(selected_routes);
         show_map();
-
         //TODO: consolidate trolleys/buses
         $.each(selected_routes, function(i,val) {
             add_route(val.value)
@@ -22,30 +20,48 @@ $(function() {
     function add_route(route) {
         //add buses from a route to the map
         $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
-            $.each(data.bus, function(i,val) {
-                var bus = val;
+            $.each(data.bus, function(i,bus) {
                 var sourceObj =  new mapboxgl.GeoJSONSource({
                     data: {
-                       "type": "Point",
-                       "coordinates": [bus.lon, bus.lat]
+                        "type": "FeatureCollection",
+                        "features": [{
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [bus.lng, bus.lat]
+                            },
+                            "properties": {
+                                "title": bus.label,
+                            }
+                        }]
                     }
                 });
                 console.log(bus);
                 map.addSource(bus.label, sourceObj);
-                //TODO: figure out styling to display a marker for buses
+                map.addLayer({
+                    "id": bus.label,
+                    "type": "symbol",
+                    "source": bus.label,
+                    "layout": {
+                        "text-field": "{title}",
+                        "text-anchor": "top"
+                    }
+                });
             });
-
         });
-
     }
 
-    function show_map(){
+    function show_map() {
     // map initialization
         map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v9',
             center: [-75.156133, 39.944918], //philly!
             zoom: 10.5
+        });
+
+        map.on('load', function() {
+
         });
     }
 
