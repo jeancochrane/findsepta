@@ -11,10 +11,14 @@ $(function() {
         console.log(selected_routes);
         show_map();
         //TODO: consolidate trolleys/buses
-        $.each(selected_routes, function(i,val) {
-            add_route(val.value)
-            //add trolleys and buses to map
-        });
+        //map.on('load', function() {
+            $.each(selected_routes, function(i,val) {
+                add_route(val.value)
+                //add trolleys and buses to map
+            });
+        //});
+        // re-style form and move it away from the map
+        $('.container').addClass('postSubmit');
     }
 
     function add_route(route) {
@@ -31,22 +35,36 @@ $(function() {
                                 "coordinates": [bus.lng, bus.lat]
                             },
                             "properties": {
-                                "title": bus.label,
+                                "icon": "bus"
                             }
                         }]
                     }
                 });
                 console.log(bus);
                 map.addSource(bus.label, sourceObj);
-                map.addLayer({
-                    "id": bus.label,
-                    "type": "symbol",
-                    "source": bus.label,
-                    "layout": {
-                        "text-field": "{title}",
-                        "text-anchor": "top"
-                    }
-                });
+                if ((bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound')) {
+                    console.log("Condition met!");
+                    map.addLayer({
+                        "id": bus.label,
+                        "type": "symbol",
+                        "source": bus.label,
+                        "layout": {
+                            "icon-image": "{icon}-15",
+                        },
+                        "paint": {
+                            "icon-color": "#FF3F60"
+                        }
+                    });
+                } else {
+                    map.addLayer({
+                        "id": bus.label,
+                        "type": "symbol",
+                        "source": bus.label,
+                        "layout": {
+                            "icon-image": "{icon}-15",
+                        }
+                    });
+                }
             });
         });
     }
@@ -58,10 +76,6 @@ $(function() {
             style: 'mapbox://styles/mapbox/streets-v9',
             center: [-75.156133, 39.944918], //philly!
             zoom: 10.5
-        });
-
-        map.on('load', function() {
-
         });
     }
 

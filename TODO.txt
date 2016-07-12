@@ -1,0 +1,7 @@
+- Add vehicle markers
+	a. Different colors for inbound/outbound
+- Display vehicle info on click (direction, route #)
+- Consolidate buses and trolleys
+- Realtime updating
+- Add route lines
+- Move and restyle menu for map screen
