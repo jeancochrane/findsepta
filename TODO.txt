@@ -1,6 +1,7 @@
 - Add vehicle markers
 	a. Different colors for inbound/outbound
 - Display vehicle info on click (direction, route #)
+- Add map controls
 - Zoom appropriately
 - Fix geojson routes bc a lot of them seem bad
 - Colors??
@@ -8,7 +9,6 @@
 - Build + deployment process
 
 FUTURE:
-- Allow selection of multiple routes
 - Show stops along route
 - Show nearest stop/next arrival
 - Save routes/state

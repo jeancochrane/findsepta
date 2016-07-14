@@ -10,21 +10,38 @@ $(function() {
     });
 
     $("form").submit(form_submit);
+    $("#clear").click(clear_routes);
+
+    var visible_routes = [];
+
+    function clear_routes() {
+        console.log("clearing:\n" + visible_routes);
+        $.each(visible_routes, function(i,v) {
+            var id = "route-" + v;
+            map.removeSource(id);
+            map.removeSource(id + "-buses");
+            map.removeLayer(id);
+            map.removeLayer(id + "-buses");
+        });
+        visible_routes = [];
+    }
 
     function form_submit(e) {
         e.preventDefault();
-        // get route selection from form
-        selected_routes = $(this).serializeArray();
-        console.log(selected_routes);
+
+        //display the map
         $("#map").show()
         map.resize();
 
-        $.each(selected_routes, function(i,val) {
-            add_route(val.value)
-            //add trolleys and buses to map
-        });
-        // re-style form and move it away from the map
+        // get route selection from form
+        route = $(this).serializeArray()[0].value
+        visible_routes.push(route);
+        console.log(visible_routes);
 
+        //add trolleys and buses to map
+        add_route(route);
+
+        // re-style form and move it away from the map
         $('.form-container').addClass('route-selection').removeClass('form-container');
         $('.route-selection').draggable();
     }
