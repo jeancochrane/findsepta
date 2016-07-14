@@ -1,7 +1,14 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiamVhbmNvY2hyYW5lIiwiYSI6ImNpaDJndHlsMzB4cXN2a201bXdzZWxqZ2wifQ.toP9rJQ4ap-Z2chY_a87Vw';
 
 $(function() {
-    var map;
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v9',
+        center: [-75.156133, 39.944918], //philly!
+        zoom: 10.5
+    });
+
     $("form").submit(form_submit);
 
     function form_submit(e) {
@@ -9,16 +16,17 @@ $(function() {
         // get route selection from form
         selected_routes = $(this).serializeArray();
         console.log(selected_routes);
-        show_map();
-        //TODO: consolidate trolleys/buses
-        //map.on('load', function() {
-            $.each(selected_routes, function(i,val) {
-                add_route(val.value)
-                //add trolleys and buses to map
-            });
-        //});
+        $("#map").show()
+        map.resize();
+
+        $.each(selected_routes, function(i,val) {
+            add_route(val.value)
+            //add trolleys and buses to map
+        });
         // re-style form and move it away from the map
-        $('.container').addClass('postSubmit');
+
+        $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.route-selection').draggable();
     }
 
     function add_route(route) {
