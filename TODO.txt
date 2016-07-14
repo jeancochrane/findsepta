@@ -4,7 +4,6 @@
 - Consolidate buses and trolleys
 - Realtime updating
 - Add route lines
-- Move and restyle menu for map screen
 - Build + deployment process
 
 FUTURE:
@@ -13,3 +12,6 @@ FUTURE:
 - Show nearest stop/next arrival
 - Save routes/state
 - Show SEPTA alerts
+
+DONE:
+- Move and restyle menu for map screen

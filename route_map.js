@@ -31,6 +31,25 @@ $(function() {
 
     function add_route(route) {
         //add buses from a route to the map
+        var url = "./assets/routes/" + route + ".geojson"
+        map.addSource("route", {
+            "type": "geojson",
+            "data": url
+        });
+
+        map.addLayer({
+            "id": "route",
+            "type": "line",
+            "source": "route",
+            "layout": {
+                "line-join": "round"
+            },
+            "paint": {
+                "line-color": "#888",
+                "line-width": 5
+            }
+        });
+
         $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
             $.each(data.bus, function(i,bus) {
                 var sourceObj =  new mapboxgl.GeoJSONSource({
