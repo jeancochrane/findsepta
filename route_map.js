@@ -31,16 +31,17 @@ $(function() {
 
     function add_route(route) {
         //add buses from a route to the map
-        var url = "./assets/routes/" + route + ".geojson"
-        map.addSource("route", {
+        var url = "./assets/routes/" + route + ".geojson";
+        var id = "route-" + route;
+        map.addSource(id, {
             "type": "geojson",
             "data": url
         });
 
         map.addLayer({
-            "id": "route",
+            "id": id,
             "type": "line",
-            "source": "route",
+            "source": id,
             "layout": {
                 "line-join": "round"
             },

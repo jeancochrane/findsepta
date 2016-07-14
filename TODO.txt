@@ -1,9 +1,9 @@
 - Add vehicle markers
 	a. Different colors for inbound/outbound
 - Display vehicle info on click (direction, route #)
-- Consolidate buses and trolleys
+- Zoom appropriately
+- Colors??
 - Realtime updating
-- Add route lines
 - Build + deployment process
 
 FUTURE:
@@ -15,3 +15,5 @@ FUTURE:
 
 DONE:
 - Move and restyle menu for map screen
+- Add route lines
+- Consolidate buses and trolleys
