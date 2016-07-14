@@ -30,9 +30,13 @@ $(function() {
     }
 
     function add_route(route) {
-        //add buses from a route to the map
+        /* Add route and associated buses to the map, pulling from SEPTA API
+        and locally stored geojson routes. */
+
+        //Add route line
         var url = "./assets/routes/" + route + ".geojson";
         var id = "route-" + route;
+
         map.addSource(id, {
             "type": "geojson",
             "data": url
@@ -51,31 +55,39 @@ $(function() {
             }
         });
 
+        //Get route buses from SEPTA API
         $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
+
+            var features = [];
+            //Add each bus as a feature to array of features
             $.each(data.bus, function(i,bus) {
-                var sourceObj =  new mapboxgl.GeoJSONSource({
-                    data: {
-                        "type": "FeatureCollection",
-                        "features": [{
-                            "type": "Feature",
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [bus.lng, bus.lat]
-                            },
-                            "properties": {
-                                "icon": "bus"
-                            }
-                        }]
+                features.push({   
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [bus.lng, bus.lat]
+                    },
+                    "properties": {
+                        "direction": bus.Direction,
+                        "id": bus.label,
+                        "destination": bus.destination,
+                        "icon": "bus"
                     }
                 });
                 console.log(bus);
-                map.addSource(bus.label, sourceObj);
-                if ((bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound')) {
+/* Let's replace this with two different icons, eg. one called "bus-NE" and one called "bus-SW".
+Then in the source we can just do:
+                    var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "NE" : "SW";
+                    "properties": {
+                        "icon": "bus" + dir 
+                    }
+*/                
+/*                if ((bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound')) {
                     console.log("Condition met!");
                     map.addLayer({
-                        "id": bus.label,
+                        "id": id + "-NE",
                         "type": "symbol",
-                        "source": bus.label,
+                        "source": id,
                         "layout": {
                             "icon-image": "{icon}-15",
                         },
@@ -93,19 +105,25 @@ $(function() {
                         }
                     });
                 }
+*/
+            });
+
+            //Add array of buses to geojson source object
+            var sourceObj =  new mapboxgl.GeoJSONSource({
+                data: {
+                    "type": "FeatureCollection",
+                    "features": features
+                }
+            });
+            map.addSource(id + "-buses", sourceObj);
+            map.addLayer({
+                "id": id + "-buses",
+                "type": "symbol",
+                "source": id + "-buses",
+                "layout": {
+                    "icon-image": "{icon}-15",
+                }
             });
         });
     }
-
-    function show_map() {
-    // map initialization
-        map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v9',
-            center: [-75.156133, 39.944918], //philly!
-            zoom: 10.5
-        });
-    }
-
-
 });

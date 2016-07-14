@@ -2,6 +2,7 @@
 	a. Different colors for inbound/outbound
 - Display vehicle info on click (direction, route #)
 - Zoom appropriately
+- Fix geojson routes bc a lot of them seem bad
 - Colors??
 - Realtime updating
 - Build + deployment process
