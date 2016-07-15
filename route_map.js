@@ -17,6 +17,41 @@ $(function() {
     //Update buses every 5 seconds
     var intervalID = setInterval(update_all, 5*1000);
 
+    map.on('click', function (e) {
+        var buses = map.queryRenderedFeatures(e.point, {
+            layers: visible_routes.map(function(route) {
+                return "route-" + route + "-buses";
+            })
+        });
+
+        if (!buses.length) {
+            return;
+        }
+
+        var bus = buses[0];
+
+        var popup = new mapboxgl.Popup()
+            .setLngLat(bus.geometry.coordinates)
+            .setHTML(
+                "<h1>Route #" + bus.properties.route + "</h1>" +
+                "Direction: <em>" + bus.properties.direction + "</em><br>" +
+                "Destination: <em>" + bus.properties.destination + "</em><br>"
+                )
+            .addTo(map);
+
+    });
+
+    map.on('mousemove', function (e) {
+        var buses = map.queryRenderedFeatures(e.point, {
+            layers: visible_routes.map(function(route) {
+                return "route-" + route + "-buses";
+            })
+        });
+    
+        map.getCanvas().style.cursor = (buses.length) ? 'pointer' : '';
+
+    });
+
     function clear_all() {
         console.log("clearing:\n" + visible_routes);
         $.each(visible_routes, function(i,v) {
@@ -119,10 +154,11 @@ $(function() {
                         "direction": bus.Direction,
                         "id": bus.label,
                         "destination": bus.destination,
+                        "route" : route,
                         "icon": "bus"
                     }
                 });
-                console.log(bus);
+                //console.log(bus);
 /* Let's replace this with two different icons, eg. one called "bus-NE" and one called "bus-SW".
 Then in the source we can just do:
                     var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "NE" : "SW";

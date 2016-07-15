@@ -5,7 +5,6 @@
 - Zoom appropriately
 - Fix geojson routes bc a lot of them seem bad
 - Colors??
-- Realtime updating
 - Build + deployment process
 
 FUTURE:
@@ -18,3 +17,4 @@ DONE:
 - Move and restyle menu for map screen
 - Add route lines
 - Consolidate buses and trolleys
+- Realtime updating
