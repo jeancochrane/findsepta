@@ -10,11 +10,14 @@ $(function() {
     });
 
     $("form").submit(form_submit);
-    $("#clear").click(clear_routes);
+    $("#clear").click(clear_all);
 
     var visible_routes = [];
 
-    function clear_routes() {
+    //Update buses every 5 seconds
+    var intervalID = setInterval(update_all, 5*1000);
+
+    function clear_all() {
         console.log("clearing:\n" + visible_routes);
         $.each(visible_routes, function(i,v) {
             var id = "route-" + v;
@@ -24,6 +27,20 @@ $(function() {
             map.removeLayer(id + "-buses");
         });
         visible_routes = [];
+    }
+
+    function clear_route(route) {
+        /* Deletes a route from the map, does not remove it from the list of visible routes */
+        var id = "route-" + route;
+        map.removeSource(id);
+        map.removeLayer(id);
+    }
+
+    function clear_buses(route) {
+        /* Deletes buses on a route from the map, does not remove it from the list of visible routes */
+        var id = "route-" + route + "-buses";
+        map.removeSource(id);
+        map.removeLayer(id);
     }
 
     function form_submit(e) {
@@ -37,9 +54,8 @@ $(function() {
         route = $(this).serializeArray()[0].value
         visible_routes.push(route);
         console.log(visible_routes);
-
-        //add trolleys and buses to map
         add_route(route);
+        update_buses(route);
 
         // re-style form and move it away from the map
         $('.form-container').addClass('route-selection').removeClass('form-container');
@@ -47,10 +63,7 @@ $(function() {
     }
 
     function add_route(route) {
-        /* Add route and associated buses to the map, pulling from SEPTA API
-        and locally stored geojson routes. */
-
-        //Add route line
+        /* Add route line */
         var url = "./assets/routes/" + route + ".geojson";
         var id = "route-" + route;
 
@@ -71,8 +84,26 @@ $(function() {
                 "line-width": 5
             }
         });
+    }
 
-        //Get route buses from SEPTA API
+    function update_all() {
+        /* Gets and draws new locations for all buses in visible_routes. Should be optimized so it doesn't 
+            delete the source and layer each time, instead using source.setData(data) as shown in the example
+            at https://www.mapbox.com/mapbox-gl-js/example/live-geojson/ */
+
+        if (visible_routes.length != 0) {
+            $.each(visible_routes, function(i,route) {
+                clear_buses(route);
+                update_buses(route);
+            });
+        }
+    }
+
+    function update_buses(route) {
+        /* Add route and associated buses to the map, pulling from SEPTA API
+        and locally stored geojson routes. */
+        var id = "route-" + route + "-buses";
+        //Get route's buses from SEPTA API
         $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
 
             var features = [];
@@ -132,11 +163,11 @@ Then in the source we can just do:
                     "features": features
                 }
             });
-            map.addSource(id + "-buses", sourceObj);
+            map.addSource(id, sourceObj);
             map.addLayer({
-                "id": id + "-buses",
+                "id": id,
                 "type": "symbol",
-                "source": id + "-buses",
+                "source": id,
                 "layout": {
                     "icon-image": "{icon}-15",
                 }
