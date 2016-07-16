@@ -143,7 +143,7 @@ $(function() {
             var features = [];
             //Add each bus as a feature to array of features
             $.each(data.bus, function(i,bus) {
-                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "NE" : "SW";
+                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
                 features.push({   
                     "type": "Feature",
                     "geometry": {
@@ -174,7 +174,8 @@ $(function() {
                 "type": "symbol",
                 "source": id,
                 "layout": {
-                    "icon-image": "{icon}-15",
+                    "icon-image": "{icon}",
+                    "icon-allow-overlap": true
                 }
             });
         });

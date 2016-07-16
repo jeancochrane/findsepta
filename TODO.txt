@@ -1,6 +1,4 @@
-- Add vehicle markers
-	a. Different colors for inbound/outbound
-- Display vehicle info on click (direction, route #)
+- Vehicle markers for different zoom levels
 - Add map controls
 - Zoom appropriately
 - Fix geojson routes bc a lot of them seem bad
@@ -18,3 +16,5 @@ DONE:
 - Add route lines
 - Consolidate buses and trolleys
 - Realtime updating
+- Vehicle markers for inbound/outbound
+- Display vehicle info on click
