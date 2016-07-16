@@ -4,7 +4,7 @@ $(function() {
 
     var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v9',
+        style: 'mapbox://styles/jeancochrane/ciqe4lxnb0002cem7a4vd0dhb',
         center: [-75.156133, 39.944918], //philly!
         zoom: 10.5
     });
@@ -143,6 +143,7 @@ $(function() {
             var features = [];
             //Add each bus as a feature to array of features
             $.each(data.bus, function(i,bus) {
+                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "NE" : "SW";
                 features.push({   
                     "type": "Feature",
                     "geometry": {
@@ -154,44 +155,9 @@ $(function() {
                         "id": bus.label,
                         "destination": bus.destination,
                         "route" : route,
-                        "icon": "bus"
+                        "icon": "bus" + dir
                     }
                 });
-                //console.log(bus);
-/* Let's replace this with two different icons, eg. one called "bus-NE" and one called "bus-SW".
-Then in the source we can just do:
-                    var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "NE" : "SW";
-                    "properties": {
-                        "icon": "bus" + dir 
-                    }
-*/                
-/*                if ((bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound')) {
-                    console.log("Condition met!");
-                    map.addLayer({
-                        "id": id + "-NE",
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{icon}-15",
-                        },
->>>>>>> origin/master
-                        "paint": {
-                            "circle-color": "#3C48A0",
-                            "circle-radius": 5
-                        }
-                    });
-                } else {
-                    map.addLayer({
-                        "id": bus.label,
-                        "type": "circle",
-                        "source": bus.label,
-                        "paint": {
-                            "circle-color": "#EBA255",
-                            "circle-radius": 5
-                        }
-                    });
-                }
-*/
             });
 
             //Add array of buses to geojson source object
@@ -201,6 +167,7 @@ Then in the source we can just do:
                     "features": features
                 }
             });
+
             map.addSource(id, sourceObj);
             map.addLayer({
                 "id": id,
