@@ -84,6 +84,7 @@ $(function() {
         //display the map
         $("#map").show()
         map.resize();
+        map.addControl(new mapboxgl.Navigation({position: 'bottom-left'}));
 
         route = $(this).serializeArray()[0].value
         visible_routes.push(route);
@@ -93,6 +94,7 @@ $(function() {
 
         // re-style form and move it away from the map
         $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.target').hide();
         $('.route-selection').draggable();
     }
 

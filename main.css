@@ -21,7 +21,7 @@ html {
     align-items: center;
     justify-content: center;
     z-index: 2;
-    background-color: #76E9FF;
+    background-color: rgb(170, 185, 241);
     border-radius: 15px;
     opacity: .9;
     margin: 10px;
@@ -33,20 +33,27 @@ html {
 }
 
 .form-container {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 600px;
-	z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 600px;
+  z-index: 2;
 }
 
-form {
-	display: block;
+.form-container h1 {
+  margin-bottom: 1em;
+  display: block;
 }
+
 
 .form-container label {
 	margin-bottom: 1em;
 	display: block;
+}
+
+form {
+  display: block;
 }
 
 #map {

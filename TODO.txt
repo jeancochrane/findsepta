@@ -1,15 +1,15 @@
 - Vehicle markers for different zoom levels
-- Add map controls
 - Zoom appropriately
 - Fix geojson routes bc a lot of them seem bad
-- Colors??
 - Build + deployment process
+	a. Hide Mapbox API key
 
 FUTURE:
 - Show stops along route
 - Show nearest stop/next arrival
 - Save routes/state
 - Show SEPTA alerts
+- Write README + link to it on splash page
 
 DONE:
 - Move and restyle menu for map screen
@@ -18,3 +18,5 @@ DONE:
 - Realtime updating
 - Vehicle markers for inbound/outbound
 - Display vehicle info on click
+- Added title to splash page
+- Added zoom controls
