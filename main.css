@@ -10,11 +10,15 @@ body {
   padding: 0;
 }
 
-.container {
+.submit-container {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	height: 600px;
+}
+
+.postSubmit {
+
 }
 
 .form {
