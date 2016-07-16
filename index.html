@@ -7,23 +7,24 @@
     <meta name="author" content="Jean Cochrane, Kalil Smith-Nuevelle, and Bea Malsky">
     <title>Where's SEPTA?</title>
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600' rel='stylesheet' type='text/css'>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css" rel="stylesheet"></link>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
     <link href="main.css" rel="stylesheet" type="text/css">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
     <script src="route_map.js"></script>
 
 </head>
 
 <body>
-    <div class="submit-container">
-        <div class="form">
-            <h1>Select your bus or trolley route:</h1>
-            <form id="select_route">            
-                <select name="bus_route">
-                    <option value="">SEPTA Routes</option>
-                    <option value="2">Route 2</option>
+    <div class="form-container">
+        <form action="#">
+            <label for="route">Select your route:</label>
+            <select name="route" id="route">
+                <optgroup label="Bus Routes">
+                    <option selected="selected" value="2">Route 2</option>
                     <option value="3">Route 3</option>
                     <option value="4">Route 4</option>
                     <option value="5">Route 5</option>
@@ -152,11 +153,21 @@
                     <option value="R">Route R</option>
                     <option value="XH">Route XH</option>
                     <option value="H">Route H</option>
-                </select>
-                <br><br>
-                <input type="submit" value="Submit">
-            </form>
-        </div>
+                </optgroup>
+                <optgroup label="Trolley Routes">
+                    <option value="10">Route 10</option>
+                    <option value="11">Route 11</option>
+                    <option value="13">Route 13</option>
+                    <option value="15">Route 15</option>
+                    <option value="34">Route 34</option>
+                    <option value="36">Route 36</option>
+                    <option value="101">Route 101</option>
+                    <option value="102">Route 102</option>
+                </optgroup>
+            </select>
+            <input type="submit" value="Submit">
+            <button id="clear" type="button">Clear Routes</button>
+        </form>
     </div>
     <div id="map"></div>
 </body>

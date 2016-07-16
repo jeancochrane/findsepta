@@ -1,7 +1,20 @@
 - Add vehicle markers
 	a. Different colors for inbound/outbound
 - Display vehicle info on click (direction, route #)
+- Add map controls
+- Zoom appropriately
+- Fix geojson routes bc a lot of them seem bad
+- Colors??
+- Build + deployment process
+
+FUTURE:
+- Show stops along route
+- Show nearest stop/next arrival
+- Save routes/state
+- Show SEPTA alerts
+
+DONE:
+- Move and restyle menu for map screen
+- Add route lines
 - Consolidate buses and trolleys
 - Realtime updating
-- Add route lines
-- Move and restyle menu for map screen
