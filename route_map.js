@@ -9,6 +9,10 @@ $(function() {
         zoom: 10.5
     });
 
+    map.on('load', function() {
+        map.addControl(new mapboxgl.Navigation({position: 'bottom-left'}));
+    });
+
     $("form").submit(form_submit);
     $("#clear").click(clear_all);
 
@@ -17,6 +21,7 @@ $(function() {
     //Update buses every 5 seconds
     var intervalID = setInterval(update_all, 5*1000);
 
+    //Display bus information on click
     map.on('click', function (e) {
         var buses = map.queryRenderedFeatures(e.point, {
             layers: visible_routes.map(function(route) {
@@ -32,6 +37,7 @@ $(function() {
 
         var popup = new mapboxgl.Popup()
             .setLngLat(bus.geometry.coordinates)
+            //HTML controlling bus information popup
             .setHTML(
                 "<h1>Route #" + bus.properties.route + "</h1>" +
                 "Direction: <em>" + bus.properties.direction + "</em><br>" +
@@ -41,6 +47,7 @@ $(function() {
 
     });
 
+    //Convert mouse to pointer when hovering over a bus
     map.on('mousemove', function (e) {
         var buses = map.queryRenderedFeatures(e.point, {
             layers: visible_routes.map(function(route) {
@@ -84,7 +91,6 @@ $(function() {
         //display the map
         $("#map").show()
         map.resize();
-        map.addControl(new mapboxgl.Navigation({position: 'bottom-left'}));
 
         route = $(this).serializeArray()[0].value
         visible_routes.push(route);
