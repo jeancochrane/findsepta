@@ -5,10 +5,19 @@
 	a. Hide Mapbox API key
 
 FUTURE:
+- Include proper (fav)icon
+	• Set up app for standalone mobile 
+		- https://developer.chrome.com/multidevice/android/installtohomescreen
+		- https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+		- windows????????????
+	• Add "Save to Home Screen" instructions in FAQ
 - Show stops along route
-- Show nearest stop/next arrival
+	• http://www3.septa.org/hackathon/Stops/?req1=23&callback=?
+- Show nearest stop
+	• http://www3.septa.org/api/ "SEPTA System Locations"
 - Save routes/state
-- Show SEPTA alerts
+- Show SEPTA alerts/bus detours 
+	• http://www3.septa.org/hackathon/BusDetours/?req1=2&callback=?
 - Write README + link to it on splash page
 
 DONE:
