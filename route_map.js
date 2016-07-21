@@ -301,14 +301,19 @@ $(function() {
     }
 
     function clear_all() {
-        //Remove all buses and routes from map
+        //Remove all buses, stops, and routes from map
         console.log("clearing:\n" + visible_routes);
         $.each(visible_routes, function(route,source) {
-            var bus_id = route + "-buses";
+            var buses_id = route + "-buses";
+            var stops_id = route + "-stops"
+            var hover = stops_id + "-hover"
             map.removeSource(route);
-            map.removeSource(bus_id);
+            map.removeSource(buses_id);
+            map.removeSource(stops_id);
             map.removeLayer(route);
-            map.removeLayer(bus_id);
+            map.removeLayer(buses_id);
+            map.removeLayer(stops_id);
+            map.removeLayer(hover);
         });
         visible_routes = {};
     }
