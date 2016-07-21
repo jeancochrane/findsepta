@@ -3,6 +3,7 @@
 - Fix geojson routes bc a lot of them seem bad
 - Build + deployment process
 	a. Hide Mapbox API key
+- Change time to mins + secs
 
 FUTURE:
 - Include proper (fav)icon
@@ -14,6 +15,8 @@ FUTURE:
 - Show nearest stop
 	• http://www3.septa.org/api/ "SEPTA System Locations"
 - Save routes/state
+- "Next to arrive" algorithm
+- Add warning about trolley tunnel
 - Show SEPTA alerts/bus detours 
 	• http://www3.septa.org/hackathon/BusDetours/?req1=2&callback=?
 - Write README + link to it on splash page
