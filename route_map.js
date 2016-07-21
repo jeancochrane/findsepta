@@ -2,6 +2,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamVhbmNvY2hyYW5lIiwiYSI6ImNpaDJndHlsMzB4cXN2a
 
 $(function() {
 
+    $("form").submit(form_submit);
+    $("#clear").click(clear_all);
+
     //Initialize map
     var map = new mapboxgl.Map({
         container: 'map',
@@ -10,50 +13,87 @@ $(function() {
         zoom: 10.5
     });
 
-    //Add zoom/rotation controls
+    /* Map setup */
     map.on('load', function() {
+        //Add zoom/rotation controls
         map.addControl(new mapboxgl.Navigation({position: 'bottom-left'}));
-    });
 
-    $("form").submit(form_submit);
-    $("#clear").click(clear_all);
+        
+        map.on('click', function (e) {
+            //Display bus information on click via https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/
+            var buses = map.queryRenderedFeatures(e.point, {
+                layers: Object.keys(visible_routes).map(function(route) {
+                    return route + "-buses";
+                })
+            });
 
-    //Display bus information on click via https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    map.on('click', function (e) {
-        var buses = map.queryRenderedFeatures(e.point, {
-            layers: Object.keys(visible_routes).map(function(route) {
-                return "route-" + route + "-buses";
-            })
+            if (buses.length) {
+                var bus = buses[0];
+
+                var popup = new mapboxgl.Popup()
+                    .setLngLat(bus.geometry.coordinates)
+                    //HTML controlling bus information popup
+                    .setHTML(
+                        "<h1>Route #" + bus.properties.route + "</h1>" +
+                        "Direction: <i>" + bus.properties.direction + "</i><br>" +
+                        "Destination: <i>" + bus.properties.destination + "</i><br><br>" +
+                        "Last updated " + format_time(bus.properties.last_updated) + " seconds ago" 
+                        )
+                    .addTo(map);
+
+                    return;
+            }
+
+            //Display stop information on click
+            else {
+                var stops = map.queryRenderedFeatures(e.point, {
+                    layers: Object.keys(visible_routes).map(function(route) {
+                        return route + "-stops";
+                    })
+                });
+
+                if (stops.length) {
+                    var stop = stops[0];
+                    var popup = new mapboxgl.Popup()
+                        .setLngLat(stop.geometry.coordinates)
+                        //HTML controlling bus information popup
+                        .setHTML(
+                            "<h3>" + stop.properties.stopname + "</h3>" +
+                            "Stop #" + stop.properties.stopid + "<br>" +
+                            "Route: " + stop.properties.route
+                            )
+                        .addTo(map);
+
+                    return;                    
+                }
+            }
         });
 
-        if (!buses.length) {
-            return;
-        }
+        //Could potentially cause performance issues, consider caching some of this data instead of recalculating
+        map.on('mousemove', function (e) {
 
-        var bus = buses[0];
+            var routes = Object.keys(visible_routes);
 
-        var popup = new mapboxgl.Popup()
-            .setLngLat(bus.geometry.coordinates)
-            //HTML controlling bus information popup
-            .setHTML(
-                "<h1>Route #" + bus.properties.route + "</h1>" +
-                "Direction: <i>" + bus.properties.direction + "</i><br>" +
-                "Destination: <i>" + bus.properties.destination + "</i><br><br>" +
-                "Last updated " + bus.properties.last_updated + " seconds ago" 
-                )
-            .addTo(map);
+            //Convert mouse to pointer when hovering over a bus or stop 
+            var buses = map.queryRenderedFeatures(e.point, {
+                layers: routes.map( function(route) {
+                    return route + "-buses";
+                })
+            });
+            map.getCanvas().style.cursor = (buses.length) ? 'pointer' : '';
 
-    });
+            //Change stop style when hovering over it
+            $.each(routes, function(i, route) {
+                var stops = map.queryRenderedFeatures(e.point, {layers: [route + "-stops"]});
+                if (stops.length) {
+                    map.setFilter(route + "-stops-hover", ["==", "stopid", stops[0].properties.stopid]);
+                    map.getCanvas().style.cursor = "pointer";
+                } else {
+                    map.setFilter(route + "-stops-hover", ["==", "stopid", ""]);
+                }
 
-    //Convert mouse to pointer when hovering over a bus 
-    map.on('mousemove', function (e) {
-        var buses = map.queryRenderedFeatures(e.point, {
-            layers: Object.keys(visible_routes).map( function(route) {
-                return "route-" + route + "-buses";
-            })
+            });
         });
-    
-        map.getCanvas().style.cursor = (buses.length) ? 'pointer' : '';
     });
 
     //Maps visible routes to GeoJSON source object, ie. {34: {<GeoJSON>}, 2: {<GeoJSON>}}
@@ -62,6 +102,10 @@ $(function() {
     //Update buses every 5 seconds
     var intervalID = setInterval(update_all, 5*1000);
    
+    function format_time(str) {
+        //stub for a time formatting function which takes a string with the number of seconds since last update
+        return str;
+    }
 
     function form_submit(e) {
         e.preventDefault();
@@ -90,43 +134,76 @@ $(function() {
 
     function add_route(route) {
         /* Add route line and buses to map*/
-        var url = "./assets/routes/" + route + ".geojson";
-        var id = "route-" + route;
+        var url = "./assets/route-lines/" + route + ".geojson";
+        var buses_id = route + "-buses";
+        var stops_id = route + "-stops";
 
         //Add route data
-        map.addSource(id, {
+        map.addSource(route, {
             "type": "geojson",
             "data": url
         });
 
         //Add route layer
         map.addLayer({
-            "id": id,
+            "id": route,
             "type": "line",
-            "source": id,
+            "source": route,
             "layout": {
                 "line-join": "round"
             },
             "paint": {
-                "line-color": "#888",
+                "line-color": "#b7b7b7",
                 "line-width": 5
             }
         });
-        
-        id += "-buses"
+
+        //Add stop data
+        var p = get_stop_data(route);
+        p.then(function(stops){
+            map.addSource(stops_id, new mapboxgl.GeoJSONSource({data: stops}));
+
+            //Add stop layer
+            map.addLayer({
+                "id": stops_id,
+                "type": "circle",
+                "source": stops_id,
+                "minzoom": 13,
+                "paint": {
+                    "circle-radius": 8,
+                    "circle-color": "#2b60ff",
+                    "circle-opacity": 0.5
+                }
+            });
+
+            //Add a layer to change stop display on hover
+            map.addLayer({
+                "id": stops_id + "-hover",
+                "type": "circle",
+                "source": stops_id,
+                "minzoom": 13,
+                "paint": {
+                    "circle-radius": 12,
+                    "circle-color": "#2b60ff",
+                    "circle-opacity": 0.4
+                },
+                "filter": ["==", "stopid", ""]
+            });
+        });
+
         //Add bus data
-        map.addSource(id, visible_routes[route]);
+        map.addSource(buses_id, visible_routes[route]);
 
         //Add bus layer
         map.addLayer({
-                "id": id,
-                "type": "symbol",
-                "source": id,
-                "layout": {
-                    "icon-image": "{icon}",
-                    "icon-allow-overlap": true
-                }
-            });
+            "id": buses_id,
+            "type": "symbol",
+            "source": buses_id,
+            "layout": {
+                "icon-image": "{icon}",
+                "icon-allow-overlap": true
+            }
+        });
     }
 
     function update_all() {
@@ -150,6 +227,37 @@ $(function() {
         });
     }
 
+    function get_stop_data(route) {
+        /* Get locations of stops along a route and return them as a GeoJSON FeatureCollection */
+        return new Promise(function(resolve){
+            $.getJSON("assets/stops/" + route + ".json", function(data) {
+                var stops = [];
+
+                $.each(data, function(i,stop) {
+                    stops.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [stop.lng, stop.lat]
+                        },
+                        "properties": {
+                            "stopid": stop.stopid,
+                            "route" : route,
+                            "stopname": stop.stopname
+                        }
+                    })
+                });
+
+                var data = {
+                    "type": "FeatureCollection",
+                    "features": stops
+                }
+
+                resolve(data);
+            });
+        });
+    }
+
     function get_bus_data(route) {
         /* Get locations of buses along a route and return them as a GeoJSON FeatureCollection */
 
@@ -159,13 +267,13 @@ $(function() {
             //SEPTA API call using JSONP
             $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
 
-                var features = [];
+                var buses = [];
                 //Add each bus as a feature to array of features
                 $.each(data.bus, function(i,bus) {
 
                     var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
 
-                    features.push({   
+                    buses.push({   
                         "type": "Feature",
                         "geometry": {
                             "type": "Point",
@@ -184,7 +292,7 @@ $(function() {
 
                 var data = {
                     "type": "FeatureCollection",
-                    "features": features
+                    "features": buses
                 }
 
                 resolve(data);
@@ -196,11 +304,11 @@ $(function() {
         //Remove all buses and routes from map
         console.log("clearing:\n" + visible_routes);
         $.each(visible_routes, function(route,source) {
-            var id = "route-" + route;
-            map.removeSource(id);
-            map.removeSource(id + "-buses");
-            map.removeLayer(id);
-            map.removeLayer(id + "-buses");
+            var bus_id = route + "-buses";
+            map.removeSource(route);
+            map.removeSource(bus_id);
+            map.removeLayer(route);
+            map.removeLayer(bus_id);
         });
         visible_routes = {};
     }

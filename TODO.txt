@@ -11,8 +11,6 @@ FUTURE:
 		- https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
 		- windows????????????
 	• Add "Save to Home Screen" instructions in FAQ
-- Show stops along route
-	• http://www3.septa.org/hackathon/Stops/?req1=23&callback=?
 - Show nearest stop
 	• http://www3.septa.org/api/ "SEPTA System Locations"
 - Save routes/state
@@ -29,3 +27,4 @@ DONE:
 - Display vehicle info on click
 - Added title to splash page
 - Added zoom controls
+- Show stops along route
