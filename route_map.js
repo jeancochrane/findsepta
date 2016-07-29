@@ -102,219 +102,220 @@ $(function() {
     //Update buses every 5 seconds
     var intervalID = setInterval(update_all, 5*1000);
    
-    function format_time(str) {
-        //stub for a time formatting function which takes a string with the number of seconds since last update
-        return str;
-    }
+});
 
-    function form_submit(e) {
-        e.preventDefault();
+function formatTime(str) {
+    //stub for a time formatting function which takes a string with the number of seconds since last update
+    return str;
+}
 
-        //Display the map
-        $("#map").show()
-        map.resize();
+function formSubmit(e) {
+    e.preventDefault();
 
-        //Get selected route from form
-        route = $(this).serializeArray()[0].value
-        
-        //Get promise of bus data
-        var p = get_bus_data(route);
-        //Add route to map after bus data is returned
-        p.then(function(data){
-            visible_routes[route] = new mapboxgl.GeoJSONSource({data: data});
-            add_route(route);
-            console.log(visible_routes);
+    //Display the map
+    $("#map").show();
+    map.resize();
+
+    //Get selected route from form
+    route = $(this).serializeArray()[0].value;
+    
+    //Get promise of bus data
+    var p = get_bus_data(route);
+    //Add route to map after bus data is returned
+    p.then(function(data){
+        visible_routes[route] = new mapboxgl.GeoJSONSource({data: data});
+        add_route(route);
+        console.log(visible_routes);
+    });
+
+    //Restyle form and move it away from the map
+    $('.form-container').addClass('route-selection').removeClass('form-container');
+    $('.target').hide();
+    $('.route-selection').draggable();
+}
+
+function addRoute(route) {
+    /* Add route line and buses to map*/
+    var url = "./assets/route-lines/" + route + ".geojson";
+    var buses_id = route + "-buses";
+    var stops_id = route + "-stops";
+
+    //Add route data
+    map.addSource(route, {
+        "type": "geojson",
+        "data": url
+    });
+
+    //Add route layer
+    map.addLayer({
+        "id": route,
+        "type": "line",
+        "source": route,
+        "layout": {
+            "line-join": "round"
+        },
+        "paint": {
+            "line-color": "#b7b7b7",
+            "line-width": 5
+        }
+    });
+
+    //Add stop data
+    var p = get_stop_data(route);
+    p.then(function(stops){
+        map.addSource(stops_id, new mapboxgl.GeoJSONSource({data: stops}));
+
+        //Add stop layer
+        map.addLayer({
+            "id": stops_id,
+            "type": "circle",
+            "source": stops_id,
+            "minzoom": 13,
+            "paint": {
+                "circle-radius": 8,
+                "circle-color": "#2b60ff",
+                "circle-opacity": 0.5
+            }
         });
 
-        //Restyle form and move it away from the map
-        $('.form-container').addClass('route-selection').removeClass('form-container');
-        $('.target').hide();
-        $('.route-selection').draggable();
+        //Add a layer to change stop display on hover
+        map.addLayer({
+            "id": stops_id + "-hover",
+            "type": "circle",
+            "source": stops_id,
+            "minzoom": 13,
+            "paint": {
+                "circle-radius": 12,
+                "circle-color": "#2b60ff",
+                "circle-opacity": 0.4
+            },
+            "filter": ["==", "stopid", ""]
+        });
+    });
+
+    //Add bus data
+    map.addSource(buses_id, visible_routes[route]);
+
+    //Add bus layer
+    map.addLayer({
+        "id": buses_id,
+        "type": "symbol",
+        "source": buses_id,
+        "layout": {
+            "icon-image": "{icon}",
+            "icon-allow-overlap": true
+        }
+    });
+}
+
+function update_all() {
+    /* Get and draw new locations for all buses in visible_routes. */
+
+    if ($.isEmptyObject(visible_routes)) {
+        return;
     }
 
-    function add_route(route) {
-        /* Add route line and buses to map*/
-        var url = "./assets/route-lines/" + route + ".geojson";
+    //Get promise for each bus route, and update data when they resolve 
+    //In sequence, should be in parallel bc we don't care about the order
+    //See http://www.html5rocks.com/en/tutorials/es6/promises/#toc-parallelism-sequencing
+    var seq = Promise.resolve();
+
+    $.each(visible_routes, function(route,source) {
+        seq = seq.then(function() {
+            return get_bus_data(route);
+        }).then(function(data){
+            source.setData(data);
+        });
+    });
+}
+
+function get_stop_data(route) {
+    /* Get locations of stops along a route and return them as a GeoJSON FeatureCollection */
+    return new Promise(function(resolve){
+        $.getJSON("assets/stops/" + route + ".json", function(data) {
+            var stops = [];
+
+            $.each(data, function(i,stop) {
+                stops.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [stop.lng, stop.lat]
+                    },
+                    "properties": {
+                        "stopid": stop.stopid,
+                        "route" : route,
+                        "stopname": stop.stopname
+                    }
+                });
+            });
+
+            var geojson = {
+                "type": "FeatureCollection",
+                "features": stops
+            };
+
+            resolve(geojson);
+        });
+    });
+}
+
+function get_bus_data(route) {
+    /* Get locations of buses along a route and return them as a GeoJSON FeatureCollection */
+
+    //Return promise so we can use async data without errors
+    //See http://www.html5rocks.com/en/tutorials/es6/promises/#toc-promisifying-xmlhttprequest
+    return new Promise(function(resolve) {  
+        //SEPTA API call using JSONP
+        $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
+
+            var buses = [];
+            //Add each bus as a feature to array of features
+            $.each(data.bus, function(i,bus) {
+
+                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
+
+                buses.push({   
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [bus.lng, bus.lat]
+                    },
+                    "properties": {
+                        "direction": bus.Direction,
+                        "id": bus.label,
+                        "destination": bus.destination,
+                        "route" : route,
+                        "icon": "bus" + dir,
+                        "last_updated": bus.Offset_sec
+                    }
+                });
+            });
+
+            var geojson = {
+                "type": "FeatureCollection",
+                "features": buses
+            };
+
+            resolve(geojson);
+        });
+    });      
+}
+
+function clear_all() {
+    //Remove all buses, stops, and routes from map
+    console.log("clearing:\n" + visible_routes);
+    $.each(visible_routes, function(route,source) {
         var buses_id = route + "-buses";
         var stops_id = route + "-stops";
-
-        //Add route data
-        map.addSource(route, {
-            "type": "geojson",
-            "data": url
-        });
-
-        //Add route layer
-        map.addLayer({
-            "id": route,
-            "type": "line",
-            "source": route,
-            "layout": {
-                "line-join": "round"
-            },
-            "paint": {
-                "line-color": "#b7b7b7",
-                "line-width": 5
-            }
-        });
-
-        //Add stop data
-        var p = get_stop_data(route);
-        p.then(function(stops){
-            map.addSource(stops_id, new mapboxgl.GeoJSONSource({data: stops}));
-
-            //Add stop layer
-            map.addLayer({
-                "id": stops_id,
-                "type": "circle",
-                "source": stops_id,
-                "minzoom": 13,
-                "paint": {
-                    "circle-radius": 8,
-                    "circle-color": "#2b60ff",
-                    "circle-opacity": 0.5
-                }
-            });
-
-            //Add a layer to change stop display on hover
-            map.addLayer({
-                "id": stops_id + "-hover",
-                "type": "circle",
-                "source": stops_id,
-                "minzoom": 13,
-                "paint": {
-                    "circle-radius": 12,
-                    "circle-color": "#2b60ff",
-                    "circle-opacity": 0.4
-                },
-                "filter": ["==", "stopid", ""]
-            });
-        });
-
-        //Add bus data
-        map.addSource(buses_id, visible_routes[route]);
-
-        //Add bus layer
-        map.addLayer({
-            "id": buses_id,
-            "type": "symbol",
-            "source": buses_id,
-            "layout": {
-                "icon-image": "{icon}",
-                "icon-allow-overlap": true
-            }
-        });
-    }
-
-    function update_all() {
-        /* Get and draw new locations for all buses in visible_routes. */
-
-        if ($.isEmptyObject(visible_routes)) {
-            return;
-        }
-
-        //Get promise for each bus route, and update data when they resolve 
-        //In sequence, should be in parallel bc we don't care about the order
-        //See http://www.html5rocks.com/en/tutorials/es6/promises/#toc-parallelism-sequencing
-        var seq = Promise.resolve();
-
-        $.each(visible_routes, function(route,source) {
-            seq = seq.then(function() {
-                return get_bus_data(route)    
-            }).then(function(data){
-                source.setData(data);
-            });
-        });
-    }
-
-    function get_stop_data(route) {
-        /* Get locations of stops along a route and return them as a GeoJSON FeatureCollection */
-        return new Promise(function(resolve){
-            $.getJSON("assets/stops/" + route + ".json", function(data) {
-                var stops = [];
-
-                $.each(data, function(i,stop) {
-                    stops.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [stop.lng, stop.lat]
-                        },
-                        "properties": {
-                            "stopid": stop.stopid,
-                            "route" : route,
-                            "stopname": stop.stopname
-                        }
-                    })
-                });
-
-                var data = {
-                    "type": "FeatureCollection",
-                    "features": stops
-                }
-
-                resolve(data);
-            });
-        });
-    }
-
-    function get_bus_data(route) {
-        /* Get locations of buses along a route and return them as a GeoJSON FeatureCollection */
-
-        //Return promise so we can use async data without errors
-        //See http://www.html5rocks.com/en/tutorials/es6/promises/#toc-promisifying-xmlhttprequest
-        return new Promise(function(resolve) {  
-            //SEPTA API call using JSONP
-            $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + route +"&callback=?", function(data) {
-
-                var buses = [];
-                //Add each bus as a feature to array of features
-                $.each(data.bus, function(i,bus) {
-
-                    var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
-
-                    buses.push({   
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [bus.lng, bus.lat]
-                        },
-                        "properties": {
-                            "direction": bus.Direction,
-                            "id": bus.label,
-                            "destination": bus.destination,
-                            "route" : route,
-                            "icon": "bus" + dir,
-                            "last_updated": bus.Offset_sec
-                        }
-                    });
-                });
-
-                var data = {
-                    "type": "FeatureCollection",
-                    "features": buses
-                }
-
-                resolve(data);
-            });
-        });      
-    }
-
-    function clear_all() {
-        //Remove all buses, stops, and routes from map
-        console.log("clearing:\n" + visible_routes);
-        $.each(visible_routes, function(route,source) {
-            var buses_id = route + "-buses";
-            var stops_id = route + "-stops"
-            var hover = stops_id + "-hover"
-            map.removeSource(route);
-            map.removeSource(buses_id);
-            map.removeSource(stops_id);
-            map.removeLayer(route);
-            map.removeLayer(buses_id);
-            map.removeLayer(stops_id);
-            map.removeLayer(hover);
-        });
-        visible_routes = {};
-    }
-});
+        var hover = stops_id + "-hover";
+        map.removeSource(route);
+        map.removeSource(buses_id);
+        map.removeSource(stops_id);
+        map.removeLayer(route);
+        map.removeLayer(buses_id);
+        map.removeLayer(stops_id);
+        map.removeLayer(hover);
+    });
+    visible_routes = {};
+}
