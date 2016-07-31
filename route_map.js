@@ -103,7 +103,6 @@ $(function() {
     var intervalID = setInterval(update_all, 5*1000);
    
 });
-
 function formatTime(str) {
     //stub for a time formatting function which takes a string with the number of seconds since last update
     return str;

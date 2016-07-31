@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 		watch: {
 			css: {
 				files: '*.css',
-				tasks: ['autoprefixer','csslint'],
+				tasks: ['postcss','csslint'],
 				options: {
 					livereload: true
 				}
@@ -18,34 +18,24 @@ module.exports = function(grunt) {
 			},
 		
 			js: {
-				files: 'src/*.js',
-				tasks: ['concat'],
+				files: 'scripts/*.js',
+				tasks: ['jshint'],
 				options: {
 					livereload: true
 				}
 
 			},
 
-			static: {
-				files: '**/*.{html,png,jpg,svg,json,geojson,ai}',
+			other: {
+				files: '**/*.{html,png,jpg,svg,json,geojson,ai,map}',
 				options: {
 					livereload: true
 				}
-			}
-		},
-
-		concat: {
-			options: {
-				sourceMap: true
-			},
-			dist: {
-				src: ['src/Route.js', 'src/Map.js', 'src/Tracker.js'],
-				dest: 'scripts.js'
 			}
 		},
 
 		jshint: {
-			beforeconcat: ['src/*.js'],
+			beforeconcat: ['scripts/*.js'],
 			afterconcat: ['scripts.js']
 		},
 
@@ -66,9 +56,39 @@ module.exports = function(grunt) {
 			dist: {
 				src: 'styles.css'
 			}
+		},
+
+		processhtml: {
+			dist: {
+				files: {
+					'dist/index.html': ['index.html']
+				}
+			}
+		},
+
+		uglify: {
+			js: {
+				files: {
+					'dist/scripts.min.js': ['scripts/*.js']
+				}
+			}
+		},
+
+		clean: ['dist', '*.map'],
+
+		copy: {
+			dist: {
+				files: [
+					{src: ['assets/**'], dest: 'dist/'},
+					{src: ['*.css'], dest: 'dist/'},
+					{src: ['about/**'], dest: 'dist/'}
+				]
+			}
 		}
+
 	});
 
 	grunt.registerTask('default', ['watch']);
+	grunt.registerTask('dist', ['clean', 'jshint', 'csslint', 'postcss', 'copy', 'processhtml', 'uglify']);
 };
 
