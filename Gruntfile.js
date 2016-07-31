@@ -35,8 +35,7 @@ module.exports = function(grunt) {
 		},
 
 		jshint: {
-			beforeconcat: ['scripts/*.js'],
-			afterconcat: ['scripts.js']
+			src: 'scripts/*.js'
 		},
 
 		csslint: {

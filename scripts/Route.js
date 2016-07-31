@@ -5,77 +5,79 @@ var Route = (function() {
 
 	//Get all
 	var getStopData = function() {
-		var request = $.getJSON(stopsURL + name + ".json");
-		request.done(function(data) {
-			 var stops = [];
+		return new Promise(function(resolve) {
+			$.getJSON(stopsURL + name + ".json", function(data) {
+				 var stops = [];
 
-            $.each(data, function(i,stop) {
-                stops.push({
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [stop.lng, stop.lat]
-                    },
-                    "properties": {
-                        "id": stop.stopid,
-                        "route" : name,
-                        "name": stop.stopname
-                    }
-                });
-            });
+	            $.each(data, function(i,stop) {
+	                stops.push({
+	                    "type": "Feature",
+	                    "geometry": {
+	                        "type": "Point",
+	                        "coordinates": [stop.lng, stop.lat]
+	                    },
+	                    "properties": {
+	                        "id": stop.stopid,
+	                        "route" : name,
+	                        "name": stop.stopname
+	                    }
+	                });
+	            });
 
-            var geojson = {
-                "type": "FeatureCollection",
-                "features": stops
-            };
+	            var geojson = {
+	                "type": "FeatureCollection",
+	                "features": stops
+	            };
 
-            return geojson;
+	            resolve(geojson);			
+			});
 		});
 	};
 
 	var getBusData = function() {
-		var request = $.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + name +"&callback=?");
-		request.done(function(data) {
-            var buses = [];
-            //Add each bus as a feature to array of features
-            $.each(data.bus, function(i,bus) {
+		return new Promise(function(resolve) {
+			$.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + name +"&callback=?", function(data) {
+	            var buses = [];
+	            //Add each bus as a feature to array of features
+	            $.each(data.bus, function(i,bus) {
 
-                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
+	                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
 
-                buses.push({   
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [bus.lng, bus.lat]
-                    },
-                    "properties": {
-                        "direction": bus.Direction,
-                        "id": bus.label,
-                        "destination": bus.destination,
-                        "route" : name,
-                        "icon": "bus" + dir,
-                        "lastUpdated": bus.Offset_sec
-                    }
-                });
-            });
-            
-            var geojson = {
-                "type": "FeatureCollection",
-                "features": buses
-            };
-            return geojson;
-        });
+	                buses.push({   
+	                    "type": "Feature",
+	                    "geometry": {
+	                        "type": "Point",
+	                        "coordinates": [bus.lng, bus.lat]
+	                    },
+	                    "properties": {
+	                        "direction": bus.Direction,
+	                        "id": bus.label,
+	                        "destination": bus.destination,
+	                        "route" : name,
+	                        "icon": "bus" + dir,
+	                        "lastUpdated": bus.Offset_sec
+	                    }
+	                });
+	            });
+	            
+	            var geojson = {
+	                "type": "FeatureCollection",
+	                "features": buses
+	            };
+	            resolve(geojson);
+	        });			
+		});
+
 	};
 
 	var getLineData = function() {
 	    var url = "assets/route-lines/" + name + ".geojson";
-	    return new mapboxgl.GeoJSONSource({data: url});
+	    return url;
 	};
 
 	var getStops = function() {
 		var id = name + "-stops";
 		var hoverID = id + "-hover";
-		var source = new mapboxgl.GeoJSONSource({data: getStopData()});
 		var layer = {
             "id": id,
             "type": "circle",
@@ -91,7 +93,7 @@ var Route = (function() {
 		var hoverLayer = {
             "id": hoverID,
             "type": "circle",
-            "source": hoverID,
+            "source": id,
             "minzoom": 13,
             "paint": {
                 "circle-radius": 12,
@@ -101,17 +103,23 @@ var Route = (function() {
             "filter": ["==", "id", ""]
         };
 
-		return {stops: {source: source, id: id, layer: layer}, hover: {id: hoverID, layer: hoverLayer}};
+	    var p = getStopData();
 
+		return p.then(function(data){
+			console.log("\ngot stop data");
+			console.log(data);
+			var source = new mapboxgl.GeoJSONSource({data: data});
+			return {stops: {source: source, id: id, layer: layer}, hover: {id: hoverID, layer: hoverLayer}};
+		});  
 	};
 
 	var getLine = function() {
 		var id = name + "-line";
 		var source = new mapboxgl.GeoJSONSource({data: getLineData()});
 		var layer = {
-			"id": route,
+			"id": id,
 	        "type": "line",
-	        "source": route,
+	        "source": id,
 	        "layout": {
 	            "line-join": "round"
 	        },
@@ -120,6 +128,7 @@ var Route = (function() {
 	            "line-width": 5
 	        }
 		};
+
 		return {source: source, id: id, layer: layer};
 	};
 
@@ -134,21 +143,22 @@ var Route = (function() {
 	            "icon-allow-overlap": true
 	        }
 	    };
-	    p = new Promise(function(resolve) {
-			resolve(getBusData());
-		});
-		p.then(function(data){
+	    var p = getBusData();
+		return p.then(function(data){
 			console.log("\ngot bus data");
 			console.log(data);
+			console.log(p);
 			busesSourceObject = new mapboxgl.GeoJSONSource({data: data});
-		}).then(function(obj){
 			return {source: busesSourceObject, id: id, layer: layer};
 		});
 	};
 
 	var updateBuses = function() {
-		var data = getBusData();
-		busesSourceObject.setData(data);
+		var p = getBusData();
+		return p.then(function(data){
+			busesSourceObject.setData(data);	
+		});
+		
 	};
 
 	var getName = function() {
@@ -164,11 +174,9 @@ var Route = (function() {
 	};
 
 	var getAll = function() {
-		var stops = getStops();
 		return {
 			buses: getBuses(),
-			stops: stops.stops,
-			hover: stops.hover,
+			stops: getStops(),
 			line: getLine()
 		};
 	};

@@ -8,8 +8,8 @@ var SEPTAMap = (function() {
 	};
 	var routes = {};
     var layerIDs = {
-        bus: [],
-        stop: [],
+        buses: [],
+        stops: [],
         hover: [],
         line: []
     };
@@ -43,12 +43,12 @@ var SEPTAMap = (function() {
     var bindMapFunctions = function() {
     	//Display information about buses and stops on click
     	map.on('click', function(e) {
-    		var buses = getFeatures(e.point, layerIDs.bus);
+    		var buses = getFeatures(e.point, layerIDs.buses);
 
 	        if (buses.length) {
 	        	displayBusInfo(buses[0]);
 	        } else {
-	        	var stops = getFeatures(e.point, layerIDs.stop);
+	        	var stops = getFeatures(e.point, layerIDs.stops);
 
 	        	if (stops.length) {
 	        		displayStopInfo(stops[0]);
@@ -58,18 +58,18 @@ var SEPTAMap = (function() {
     	});
         
         map.on('mousemove', function(e) {
-        	var buses = getFeatures(e.point, layerIDs.bus);
-        	var stops = getFeatures(e.point, layerIDs.stop);
+        	var buses = getFeatures(e.point, layerIDs.buses);
+        	var stops = getFeatures(e.point, layerIDs.stops);
 
         	//Change cursor to pointer over bus or stop
         	canvas.style.cursor = (buses.length || stops.length) ? 'pointer' : '';
 
         	//Add hover effect for stops
         	if (stops.length) {
-        		var stop = stop[0];
-        		map.setFilter(stop.hoverLayer, ["==", "id", stop.properties.id]);
+        		var stop = stops[0];
+        		map.setFilter(stop.properties.route + "-stops-hover", ["==", "id", stop.properties.id]);
         	} else {
-        		$.each(layerIDs.hover, function(layer) {
+        		$.each(layerIDs.hover, function(i, layer) {
         			map.setFilter(layer, ["==", "id", ""]);	
         		});
         	}
@@ -105,7 +105,7 @@ var SEPTAMap = (function() {
                 "<h1>Route #" + bus.properties.route + "</h1>" +
                 "Direction: <i>" + bus.properties.direction + "</i><br>" +
                 "Destination: <i>" + bus.properties.destination + "</i><br><br>" +
-                "Last updated " + format_time(bus.properties.lastUpdated) + " seconds ago" 
+                "Last updated " + formatTime(bus.properties.lastUpdated) + " seconds ago" 
             )
             .addTo(map);
 
@@ -118,7 +118,7 @@ var SEPTAMap = (function() {
 
     //Request new bus/trolley location data for each visible route
     var updateRoutes = function() {
-        $.each(Object.values(routes), function(route) {
+        $.each(Object.values(routes), function(i, route) {
             route.updateBuses();
         });
 
@@ -134,35 +134,47 @@ var SEPTAMap = (function() {
         console.log(ids);
 
         //Add each source/layer associated with the route and cache the layer ids
-        var seq = Promise.resolve();
-        $.each(route.getAll(), function(key, data) {
-            seq.then(function() 
-                {console.log(data);
-                if (data.source) {
-                    map.addSource(data.id, data.source);
-                }
-                map.addLayer(data.id, data.layer);
-                layerIDs[key] = ids[key];
-            });
-        });
-        seq.then(function() {
+        var p = Promise.all([route.getStops(), route.getBuses(), route.getLine()]);
+        p.then(function(result) {
+            console.log(result);
+            var stops = result[0].stops;
+            var hover = result[0].hover;
+            var buses = result[1];
+            var line = result[2];
+
+            map.addSource(stops.id, stops.source);
+            console.log(stops.layer);
+            map.addLayer(stops.layer);
+            map.addLayer(hover.layer);
+            layerIDs.stops.push(stops.id);
+            layerIDs.hover.push(hover.id);
+
+            map.addSource(buses.id, buses.source);
+            map.addLayer(buses.layer);
+            layerIDs.buses.push(buses.id);
+
+            map.addSource(line.id, line.source);
+            map.addLayer(line.layer);
+            layerIDs.line.push(line.id);
+
             routes[routeName] = route;
 
             //Zoom to fit all buses
             //Consider changing to use geojson-extent to get bounds of route line: http://stackoverflow.com/a/35692917
-            var bounds = new mapboxgl.LngLatBounds();
-            $.each(map.queryRenderedFeatures({layers: layerIDs.buses}), function(bus) {
-                bounds.extend(bus.geometry.coordinates);
-            });
+            // var bounds = new mapboxgl.LngLatBounds();
+            // $.each(buses.source._data.features, function(i, bus) {
+            //     var coords = bus.geometry.coordinates.map(parseFloat);
+            //     bounds.extend(coords);
+            // });
 
-            map.fitBounds(bounds);
+            // map.fitBounds(bounds);
         }); 
         
     };
 
     //Remove a route from the map
     var removeRoute = function(routeName) {
-        $.each(Object.keys(routes[routeName].getIDs()), function(id) {
+        $.each(Object.keys(routes[routeName].getIDs()), function(i, id) {
             map.removeSource(id);
             map.removeLayer(id);
         });
@@ -172,7 +184,7 @@ var SEPTAMap = (function() {
 
     //Remove all routes from the map
     var clearAllRoutes = function() {
-        $.each(Object.keys(routes), removeRoute(route));
+        $.each(Object.keys(routes), removeRoute);
     };
 
     var hideStops = function() {
