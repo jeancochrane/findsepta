@@ -1,83 +1,15 @@
 var Route = (function() {
 	var name,
 		busesSourceObject,
-		stopsURL = 'assets/stops/';
-
-	//Get all
-	var getStopData = function() {
-		return new Promise(function(resolve) {
-			$.getJSON(stopsURL + name + ".json", function(data) {
-				 var stops = [];
-
-	            $.each(data, function(i,stop) {
-	                stops.push({
-	                    "type": "Feature",
-	                    "geometry": {
-	                        "type": "Point",
-	                        "coordinates": [stop.lng, stop.lat]
-	                    },
-	                    "properties": {
-	                        "id": stop.stopid,
-	                        "route" : name,
-	                        "name": stop.stopname
-	                    }
-	                });
-	            });
-
-	            var geojson = {
-	                "type": "FeatureCollection",
-	                "features": stops
-	            };
-
-	            resolve(geojson);			
-			});
-		});
-	};
-
-	var getBusData = function() {
-		return new Promise(function(resolve) {
-			$.getJSON("http://www3.septa.org/api/TransitView/index.php?route=" + name +"&callback=?", function(data) {
-	            var buses = [];
-	            //Add each bus as a feature to array of features
-	            $.each(data.bus, function(i,bus) {
-
-	                var dir = (bus.Direction == 'NorthBound') || (bus.Direction == 'EastBound') ? "-NE" : "-SW";
-
-	                buses.push({   
-	                    "type": "Feature",
-	                    "geometry": {
-	                        "type": "Point",
-	                        "coordinates": [bus.lng, bus.lat]
-	                    },
-	                    "properties": {
-	                        "direction": bus.Direction,
-	                        "id": bus.label,
-	                        "destination": bus.destination,
-	                        "route" : name,
-	                        "icon": "bus" + dir,
-	                        "lastUpdated": bus.Offset_sec
-	                    }
-	                });
-	            });
-	            
-	            var geojson = {
-	                "type": "FeatureCollection",
-	                "features": buses
-	            };
-	            resolve(geojson);
-	        });			
-		});
-
-	};
-
-	var getLineData = function() {
-	    var url = "assets/route-lines/" + name + ".geojson";
-	    return url;
-	};
+		stopsURL = 'assets/stops/',
+		lineURL = 'assets/lines/',
+		busURL = 'busdata/';
 
 	var getStops = function() {
 		var id = name + "-stops";
 		var hoverID = id + "-hover";
+		var source = new mapboxgl.GeoJSONSource({data: stopsURL});
+
 		var layer = {
             "id": id,
             "type": "circle",
@@ -103,19 +35,13 @@ var Route = (function() {
             "filter": ["==", "id", ""]
         };
 
-	    var p = getStopData();
-
-		return p.then(function(data){
-			console.log("\ngot stop data");
-			console.log(data);
-			var source = new mapboxgl.GeoJSONSource({data: data});
-			return {stops: {source: source, id: id, layer: layer}, hover: {id: hoverID, layer: hoverLayer}};
-		});  
+		return {stops: {source: source, id: id, layer: layer}, hover: {id: hoverID, layer: hoverLayer}};
 	};
 
 	var getLine = function() {
 		var id = name + "-line";
-		var source = new mapboxgl.GeoJSONSource({data: getLineData()});
+		var source = new mapboxgl.GeoJSONSource({data: lineURL});
+
 		var layer = {
 			"id": id,
 	        "type": "line",
@@ -134,6 +60,8 @@ var Route = (function() {
 
 	var getBuses = function() {
 		var id = name + "-buses";
+		busesSourceObject = new mapboxgl.GeoJSONSource({data: busURL});
+
 		var layer =	{
 	        "id": id,
 	        "type": "symbol",
@@ -143,42 +71,31 @@ var Route = (function() {
 	            "icon-allow-overlap": true
 	        }
 	    };
-	    var p = getBusData();
-		return p.then(function(data){
-			console.log("\ngot bus data");
-			console.log(data);
-			console.log(p);
-			busesSourceObject = new mapboxgl.GeoJSONSource({data: data});
-			return {source: busesSourceObject, id: id, layer: layer};
-		});
+	    
+		return {source: busesSourceObject, id: id, layer: layer};
 	};
 
 	var updateBuses = function() {
-		var p = getBusData();
-		return p.then(function(data){
-			busesSourceObject.setData(data);	
-		});
-		
+		busesSourceObject.setData(busURL);
 	};
 
 	var getName = function() {
 		return name;
 	};
 
-	var getIDs = function() {
-		return {stops: name + "-stops", buses: name + "-buses", hover: name + "-hover", line: name + "-line"};
+	var getLayerIDs = function() {
+		return {stops: name + "-stops", buses: name + "-buses", line: name + "-line", hover: name + "-stops-hover"};
+	};
+	
+	var getSourceIDs = function() {
+		return {stops: name + "-stops", buses: name + "-buses", line: name + "-line"};	
 	};
 
 	var init = function(routeName) {
 		name = routeName;
-	};
-
-	var getAll = function() {
-		return {
-			buses: getBuses(),
-			stops: getStops(),
-			line: getLine()
-		};
+		lineURL += name + ".geojson";
+		stopsURL += name + ".geojson";
+		busURL += name;
 	};
 
 
@@ -188,8 +105,8 @@ var Route = (function() {
 		getLine: getLine,
 		getStops: getStops,
 		getName: getName,
-		getIDs: getIDs,
-		getAll: getAll,
+		getLayerIDs: getLayerIDs,
+		getSourceIDs: getSourceIDs,
 		init: init
 	};
 });

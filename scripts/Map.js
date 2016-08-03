@@ -14,7 +14,7 @@ var SEPTAMap = (function() {
         line: []
     };
 
-	var init = function() {	    		
+	var init = function() {
 		map = new mapboxgl.Map({
 	        container: 'map',
 	        style: 'mapbox://styles/jeancochrane/ciqe4lxnb0002cem7a4vd0dhb',
@@ -54,7 +54,6 @@ var SEPTAMap = (function() {
 	        		displayStopInfo(stops[0]);
 	        	}
 	        }
-
     	});
         
         map.on('mousemove', function(e) {
@@ -126,75 +125,84 @@ var SEPTAMap = (function() {
 
     //Add a route to the map
     var addRoute = function(routeName) {
+        if (routeName in routes) {
+            return;
+        }
         var route = Route();
         route.init(routeName);
-        var ids = route.getIDs();
-        console.log("route, ids");
+        console.log("adding route:");
         console.log(route);
-        console.log(ids);
 
-        //Add each source/layer associated with the route and cache the layer ids
-        var p = Promise.all([route.getStops(), route.getBuses(), route.getLine()]);
-        p.then(function(result) {
-            console.log(result);
-            var stops = result[0].stops;
-            var hover = result[0].hover;
-            var buses = result[1];
-            var line = result[2];
+        var line = route.getLine();
+        var tmp = route.getStops();
+        var stops = tmp.stops;
+        var hover = tmp.hover;
+        var buses = route.getBuses();
 
-            map.addSource(stops.id, stops.source);
-            console.log(stops.layer);
-            map.addLayer(stops.layer);
-            map.addLayer(hover.layer);
-            layerIDs.stops.push(stops.id);
-            layerIDs.hover.push(hover.id);
+        map.addSource(line.id, line.source);
+        map.addLayer(line.layer);
 
-            map.addSource(buses.id, buses.source);
-            map.addLayer(buses.layer);
-            layerIDs.buses.push(buses.id);
+        map.addSource(stops.id, stops.source);
+        map.addLayer(stops.layer);
+        map.addLayer(hover.layer);
 
-            map.addSource(line.id, line.source);
-            map.addLayer(line.layer);
-            layerIDs.line.push(line.id);
+        map.addSource(buses.id, buses.source);
+        map.addLayer(buses.layer);
 
-            routes[routeName] = route;
-
-            //Zoom to fit all buses
-            //Consider changing to use geojson-extent to get bounds of route line: http://stackoverflow.com/a/35692917
-            // var bounds = new mapboxgl.LngLatBounds();
-            // $.each(buses.source._data.features, function(i, bus) {
-            //     var coords = bus.geometry.coordinates.map(parseFloat);
-            //     bounds.extend(coords);
-            // });
-
-            // map.fitBounds(bounds);
-        }); 
+        layerIDs.stops.push(stops.id);
+        layerIDs.hover.push(hover.id);
+        layerIDs.buses.push(buses.id);
+        layerIDs.line.push(line.id);
         
+        routes[routeName] = route;
+
+        zoomToFit();
+    };
+
+    var zoomToFit = function() {
+        /* bounds are static, calculate with python script and pass to route */
+
+        // //Zoom to fit all stops
+        // //Consider changing to use geojson-extent to get bounds of route line: http://stackoverflow.com/a/35692917
+        // var bounds = new mapboxgl.LngLatBounds();
+        // $.each(stops.source._data.features, function(i, bus) {
+        //     var coords = bus.geometry.coordinates.map(parseFloat);
+        //     bounds.extend(coords);
+        // });
+
+        // map.fitBounds(bounds, {padding: 50});
     };
 
     //Remove a route from the map
-    var removeRoute = function(routeName) {
-        $.each(Object.keys(routes[routeName].getIDs()), function(i, id) {
+    var removeRoute = function(name, route) {
+        console.log(route);
+        $.each(route.getSourceIDs(), function(i, id) {
+            console.log(id);
             map.removeSource(id);
+        });
+        $.each(route.getLayerIDs(), function(i, id) {
+            console.log(id);
             map.removeLayer(id);
         });
         //remove ids from id list
-        delete routes[routeName];
+        console.log(name);
+        delete routes[name];
     };
 
     //Remove all routes from the map
     var clearAllRoutes = function() {
-        $.each(Object.keys(routes), removeRoute);
+        console.log(routes);
+        $.each(routes, removeRoute);
     };
 
     var hideStops = function() {
-        $.each(layerIDs.stops.concat(layerIDs.hover), function(layer) {
+        $.each(layerIDs.stops.concat(layerIDs.hover), function(i, layer) {
             map.setLayoutProperty(layer, 'visibility', 'none');
         });
     };
 
     var showStops = function() {
-        $.each(layerIDs.stops.concat(layerIDs.hover), function(layer) {
+        $.each(layerIDs.stops.concat(layerIDs.hover), function(i, layer) {
             map.setLayoutProperty(layer, 'visibility', 'visible');
         });
     };
