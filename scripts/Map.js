@@ -4,7 +4,9 @@ var SEPTAMap = (function() {
 	var defaults = {
 		updateInterval: 5000,
 		controlsPosition: 'bottom-left',
-		zoom: 10.5
+		zoom: 10.5,
+        center: [-75.156133, 39.944918], //philly,
+        styleurl: 'mapbox://styles/jeancochrane/ciqe4lxnb0002cem7a4vd0dhb',
 	};
 	var routes = {};
     var layerIDs = {
@@ -17,8 +19,8 @@ var SEPTAMap = (function() {
 	var init = function() {
 		map = new mapboxgl.Map({
 	        container: 'map',
-	        style: 'mapbox://styles/jeancochrane/ciqe4lxnb0002cem7a4vd0dhb',
-	        center: [-75.156133, 39.944918], //philly!
+	        style: defaults.styleurl,
+	        center: defaults.center, //philly!
 	        zoom: defaults.zoom
 	    });
 		map.on('load', setupMap);
@@ -67,7 +69,7 @@ var SEPTAMap = (function() {
         	if (stops.length) {
         		var stop = stops[0];
         		map.setFilter(stop.properties.route + "-stops-hover", ["==", "id", stop.properties.id]);
-        	} else {
+        	} else if (layerIDs.hover) {
         		$.each(layerIDs.hover, function(i, layer) {
         			map.setFilter(layer, ["==", "id", ""]);	
         		});
@@ -156,21 +158,17 @@ var SEPTAMap = (function() {
         
         routes[routeName] = route;
 
-        zoomToFit();
+        zoomToFit(route);
     };
 
-    var zoomToFit = function() {
-        /* bounds are static, calculate with python script and pass to route */
-
-        // //Zoom to fit all stops
-        // //Consider changing to use geojson-extent to get bounds of route line: http://stackoverflow.com/a/35692917
-        // var bounds = new mapboxgl.LngLatBounds();
-        // $.each(stops.source._data.features, function(i, bus) {
-        //     var coords = bus.geometry.coordinates.map(parseFloat);
-        //     bounds.extend(coords);
-        // });
-
-        // map.fitBounds(bounds, {padding: 50});
+    //Fit map to route
+    var zoomToFit = function(route) {
+        console.log("waiting for promise");
+        route.getExtentPromise().then(function(extent) {
+            console.log("zooming to extent: ");
+            console.log(extent);
+            map.fitBounds(extent);
+        });
     };
 
     //Remove a route from the map

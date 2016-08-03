@@ -3,7 +3,8 @@ var Route = (function() {
 		busesSourceObject,
 		stopsURL = 'assets/stops/',
 		lineURL = 'assets/lines/',
-		busURL = 'busdata/';
+		busURL = 'busdata/',
+		extentURL = 'assets/extents/';
 
 	var getStops = function() {
 		var id = name + "-stops";
@@ -75,6 +76,14 @@ var Route = (function() {
 		return {source: busesSourceObject, id: id, layer: layer};
 	};
 
+	var getExtentPromise = function() {
+		return new Promise(function(resolve) {
+			$.getJSON(extentURL, function(data) {
+				resolve([[data[0], data[1]], data[2], data[3]]);
+			});
+		});
+	};
+
 	var updateBuses = function() {
 		busesSourceObject.setData(busURL);
 	};
@@ -96,6 +105,7 @@ var Route = (function() {
 		lineURL += name + ".geojson";
 		stopsURL += name + ".geojson";
 		busURL += name;
+		extentURL += name + ".json";
 	};
 
 
@@ -105,6 +115,7 @@ var Route = (function() {
 		getLine: getLine,
 		getStops: getStops,
 		getName: getName,
+		getExtentPromise: getExtentPromise,
 		getLayerIDs: getLayerIDs,
 		getSourceIDs: getSourceIDs,
 		init: init
