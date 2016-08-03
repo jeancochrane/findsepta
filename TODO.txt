@@ -1,8 +1,5 @@
 - Vehicle markers for different zoom levels
 - Zoom appropriately
-- Fix geojson routes bc a lot of them seem bad
-- Build + deployment process
-	a. Hide Mapbox API key
 - Change time to mins + secs
 
 FUTURE:

@@ -1,0 +1,36 @@
+{
+  "name": "septa_tracker",
+  "version": "1.0.0",
+  "description": "Small web app for viewing the location of SEPTA buses",
+  "main": "route_map.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeancochrane/septa_tracker.git"
+  },
+  "author": "Jean Cochrane and Kalil Smith-Nuevelle",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/jeancochrane/septa_tracker/issues"
+  },
+  "homepage": "https://github.com/jeancochrane/septa_tracker#readme",
+  "devDependencies": {
+    "autoprefixer": "^6.3.7",
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-csslint": "^1.0.0",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-postcss": "^0.8.0",
+    "grunt-processhtml": "^0.4.0",
+    "grunt-text-replace": "^0.4.0",
+    "install": "^0.8.1",
+    "load-grunt-tasks": "^3.5.0",
+    "npm": "^3.10.5",
+    "opener": "^1.4.1"
+  }
+}
