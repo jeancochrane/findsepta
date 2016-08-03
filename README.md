@@ -1,6 +1,11 @@
 # septa_tracker
 A web app for geolocating SEPTA buses and trolleys in Philadelphia.
 
-For development: make sure you have node/npm installed then run `npm install` in the directory. To watch files for changes, use `grunt watch`. To automatically reload changes in the browser (when you open the local file), install the [livereload extension](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei), open the file in your browser, and click the extension icon while the `grunt watch` task is running. 
+##Development
+Requires Python 2.7, pip, node.js, and npm.
 
-To build for distribution, use `grunt dist`. Clean up with `grunt clean`.
+Run `npm install` in the directory, then `pip install -r requirements.txt`.
+
+To watch files for changes and start a local webserver, run `grunt` or `grunt serve`. Changes to the bottle app will automatically restart the server. To automatically reload js/css/html changes in the browser, install the [livereload extension](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei) and click the extension icon while the `watch` task is running.
+
+To build for distribution, use `grunt build`. Clean up with `grunt clean`.

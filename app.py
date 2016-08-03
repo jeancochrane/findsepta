@@ -1,6 +1,10 @@
 import json
 import requests
 from bottle import Bottle, run, debug, static_file
+# DEV
+import cherrypy
+cherrypy.config.update({"log.screen": True})
+# ENDDEV
 
 app = Bottle()
 busAPI = "http://www3.septa.org/api/TransitView/index.php?route="
@@ -8,12 +12,12 @@ busAPI = "http://www3.septa.org/api/TransitView/index.php?route="
 
 @app.route('/')
 def index():
-    return static_file("index.html", ".")
+    return static_file("/index.html", ".")
 
 
 @app.route('/about')
 def about():
-    return static_file("about.html", ".")
+    return static_file("/about.html", ".")
 
 
 @app.error(404)
@@ -28,12 +32,14 @@ def busdata(route):
     features = []
     for bus in parsed_json["bus"]:
         direction = bus["Direction"]
-        icon = "bus"
-        icon += "-NE" if direction == "NorthBound" or direction == "EastBound"\
-            else "-SW"
+        icon = "bus-NE"\
+            if direction == "NorthBound" or direction == "EastBound"\
+            else "bus-SW"
 
-        point = {"type": "Point",
-                 "coordinates": map(float, [bus["lng"], bus["lat"]])}
+        point = {
+            "type": "Point",
+            "coordinates": map(float, [bus["lng"], bus["lat"]])
+        }
 
         properties = {
             "direction": direction,
@@ -45,9 +51,11 @@ def busdata(route):
             "lastUpdated": bus["Offset_sec"]
         }
 
-        feature = {"type": "Feature",
-                   "geometry": point,
-                   "properties": properties}
+        feature = {
+            "type": "Feature",
+            "geometry": point,
+            "properties": properties
+        }
 
         features.append(feature)
 
@@ -55,9 +63,17 @@ def busdata(route):
     return json.dumps(feature_collection)
 
 
-application = app
+# DEV
+@app.route('/<filepath:path>')
+def static(filepath):
+    return static_file(filepath, ".")
+# ENDDEV
 
-# TEST
+# BUILD
+# application = app
+# ENDBUILD
+
+# DEV
 debug(True)
-run(reloader=True)
-# ENDTEST
+run(app, reloader=True, server="cherrypy", port=8000)
+# ENDDEV

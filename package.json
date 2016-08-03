@@ -27,8 +27,10 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-postcss": "^0.8.0",
     "grunt-processhtml": "^0.4.0",
+    "grunt-text-replace": "^0.4.0",
     "install": "^0.8.1",
     "load-grunt-tasks": "^3.5.0",
-    "npm": "^3.10.5"
+    "npm": "^3.10.5",
+    "opener": "^1.4.1"
   }
 }

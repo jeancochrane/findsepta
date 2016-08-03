@@ -1,5 +1,7 @@
 module.exports = function(grunt) {
 	require('load-grunt-tasks')(grunt);
+	var spawn = require('child_process').spawn;
+	var opener = require('opener');
 
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
@@ -79,15 +81,43 @@ module.exports = function(grunt) {
 			dist: {
 				files: [
 					{src: ['assets/**'], dest: 'dist/'},
-					{src: ['*.css'], dest: 'dist/'},
+					{src: ['*.css', 'requirements.txt'], dest: 'dist/'},
 					{src: ['about/**'], dest: 'dist/'}
+				]
+			}
+		},
+
+		replace: {
+			python: {
+				src: ['app.py'],
+				dest: 'dist/app.py',
+				replacements: [
+					{from: /# DEV([\s\S]*?)# ENDDEV/g, to: ""},
+					{from: /# BUILD\n# ([\s\S]*?)# ENDBUILD/g, to: "$1"}
 				]
 			}
 		}
 
 	});
 
-	grunt.registerTask('default', ['watch']);
-	grunt.registerTask('dist', ['clean', 'jshint', 'csslint', 'postcss', 'copy', 'processhtml', 'uglify']);
+	var server;
+	grunt.registerTask('app', function() {
+		var server = spawn('python', ['app.py'])
+			.on('error', function(err) {
+				throw err;
+			});
+
+        server.stdout.on('data', grunt.log.write);
+        server.stderr.on('data', grunt.log.write);
+
+        server.on('close', function(code) {
+	        grunt.log.write('exit code: ' + code + '\n');
+        });
+        opener('http://127.0.0.1:8000');
+	});
+
+	grunt.registerTask('serve', ['app', 'watch']);
+	grunt.registerTask('build', ['clean', 'jshint', 'csslint', 'postcss', 'copy', 'processhtml', 'uglify', 'replace']);
+	grunt.registerTask('default', ['serve']);
 };
 
