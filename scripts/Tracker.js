@@ -5,6 +5,7 @@ var Tracker = (function() {
         $('form').submit(formSubmit);
         $('#clearButton').click(SEPTAMap.clearAllRoutes);
     };
+        $('#mapInMotion').click(SEPTAMap.mapInMotion);
 
     var formSubmit = function(e) {
         e.preventDefault();

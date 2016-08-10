@@ -119,10 +119,9 @@ var SEPTAMap = (function() {
 
     //Request new bus/trolley location data for each visible route
     var updateRoutes = function() {
-        $.each(Object.values(routes), function(i, route) {
+        $.each(routes, function(i, route) {
             route.updateBuses();
         });
-
     };
 
     //Add a route to the map
@@ -211,7 +210,20 @@ var SEPTAMap = (function() {
     	intervalID = setInterval(interval, updateRoutes);
     }; 
 
+    // Constant refreshing for Map in Motion
+    var mapInMotion = function() {
+    // loop through route objects    
+        $.each(routes, function(route, buses) {
+            // loop through buses in a given route and trigger animation
+            $.each(buses, function(i, bus) {
+                Motion.avgSpeed(bus);
+                Motion.animate(bus);
+            });
+        });
+    };
+
     return {
+        mapInMotion: mapInMotion,
     	clearAllRoutes: clearAllRoutes,
     	hideStops: hideStops,
     	showStops: showStops,
