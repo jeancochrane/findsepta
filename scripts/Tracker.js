@@ -12,9 +12,11 @@ var Tracker = (function() {
 
         SEPTAMap.showMap();
 
-        //Restyle form and move it away from the map
-        $('.form-container h1').hide();
+    //Restyle form and move it away from the map
+        $('header').hide();
+        $('#clearButton').show();
         $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();
         
         SEPTAMap.addRoute(route);
