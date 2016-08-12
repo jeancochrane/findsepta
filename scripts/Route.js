@@ -97,8 +97,17 @@ var Route = (function() {
 	};
 	
 	var getSourceIDs = function() {
-		return {stops: name + "-stops", buses: name + "-buses", line: name + "-line"};	
+		return {stops: name + "-stops", buses: name + "-buses", line: name + "-line"};
 	};
+
+	//Returns average speed of a vehicle on a given leg of a route
+	var avgSpeed = function(bus) {
+
+		var routeLine = getLine();
+		routeLine = routeLine.source;
+		var direction = bus.direction;
+		var timetable = [];
+	}
 
 	var init = function(routeName) {
 		name = routeName;

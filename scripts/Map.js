@@ -15,6 +15,7 @@ var SEPTAMap = (function() {
         hover: [],
         line: []
     };
+    var motion = false;
 
 	var init = function() {
 		map = new mapboxgl.Map({
@@ -206,24 +207,70 @@ var SEPTAMap = (function() {
 
     //Change how frequently the map updates in ms. Default 5s (5000ms)
     var setUpdateInterval = function(interval) {
-    	clearInterval(intervalID);
-    	intervalID = setInterval(interval, updateRoutes);
-    }; 
+        clearInterval(intervalID);
+        intervalID = setInterval(interval, updateRoutes);
+    };
 
-    // Constant refreshing for Map in Motion
+    //Recursive function to continually update buses based on their average speed
+    //and the time since the last update
+    var animate = function(bus) {
+
+        //Vendor prefixes for animation functions
+        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+        var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+
+        while (motion) {
+            var sourceID = bus.id; //no individual source IDs for buses! (they're one layer)
+            var elapsed_time = bus.properties.lastUpdated;
+            var avg_speed = bus.properties.speed;
+
+            //TODO: use turf.js to calculate next position based on avg speed
+
+            //update source to reflect new position
+            map.getSource(sourceID).setData(bus.properties.coordinates);
+
+            requestAnimationFrame(animate);
+
+        } if (!motion) {
+            cancelAnimationFrame();
+            return;
+        }
+    };
+
+    //Animate buses with our best guess of where they are since last update
     var mapInMotion = function() {
-    // loop through route objects    
-        $.each(routes, function(route, buses) {
-            // loop through buses in a given route and trigger animation
+        motion = true;
+
+        //Change "Map in Motion" button to "Cancel" button
+        $('#mapInMotion').html('Cancel motion').addClass('cancel').click(cancelMotion);
+
+        //TODO: cancel updates from SEPTA
+
+        //Loop through route objects    
+        $.each(routes, function(routeName, buses) {
+
+            //Loop through buses in a given route and trigger animation
             $.each(buses, function(i, bus) {
                 Motion.avgSpeed(bus);
-                Motion.animate(bus);
+                //TODO: function that jumps the icon to our best guess of its
+                //location before we animate it
+                animate(bus);
             });
         });
     };
 
+    //Stop bus animation and return to static data
+    var cancelMotion = function() {
+        motion = false;
+        $('#mapInMotion').html('Map in Motion').removeClass('cancel');
+        Tracker.init();
+    };
+
     return {
         mapInMotion: mapInMotion,
+        cancelMotion: cancelMotion,
     	clearAllRoutes: clearAllRoutes,
     	hideStops: hideStops,
     	showStops: showStops,

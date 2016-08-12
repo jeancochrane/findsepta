@@ -4,8 +4,8 @@ var Tracker = (function() {
     var bindFunctions = function() {
         $('form').submit(formSubmit);
         $('#clearButton').click(SEPTAMap.clearAllRoutes);
-    };
         $('#mapInMotion').click(SEPTAMap.mapInMotion);
+    };
 
     var formSubmit = function(e) {
         e.preventDefault();
@@ -14,8 +14,10 @@ var Tracker = (function() {
         SEPTAMap.showMap();
 
         //Restyle form and move it away from the map
-        $('.form-container h1').hide();
+        $('header').hide();
+        $('#clearButton').show();
         $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();
         
         SEPTAMap.addRoute(route);

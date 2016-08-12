@@ -25,16 +25,6 @@ var Motion = (function() {
 
 		return bus;
 	};
-
-	var animate = function(bus) {
-		// use turf.js to update bus to a new position based on its average speed
-		// and the time since the last update
-
-		// update source to reflect new position
-		map.getSource('bus').setData(bus);
-
-		requestAnimationFrame(animate);
-	}
 	
 
 	// /////////////////////////////// //
@@ -53,7 +43,7 @@ var Motion = (function() {
 		// URL template: septa.org/schedules/{bus,trolley}/{w,s,h}/{###}_{0,1}.htm
 		//                                   ^ (type)      ^(day)  ^(route)^(direction)
 
-		var routeName = bus.route.name;
+		var route = bus.properties.route;
 		var routeLine = bus.route.line;
 		var direction = bus.direction;
 		var timetable = [];
@@ -93,7 +83,7 @@ var Motion = (function() {
 		return stops;
 	};
 
-	var Distance = function(stops) {
+	var distance = function(stops) {
 		// takes the stops object and returns the distance between 
 		// the two stops using turf.js distance calculator 
 		// (two points [stops] along a line [route])
@@ -121,7 +111,7 @@ var Motion = (function() {
 		return times;
 	};
 
-	var Time = function(times) {
+	var time = function(times) {
 		// subtracts the two "closest times", returning the time
 		// it takes for the bus to travel that leg of the trip.
 

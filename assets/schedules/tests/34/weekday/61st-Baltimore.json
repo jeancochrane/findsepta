@@ -1,0 +1,25 @@
+{
+	"route": "34",
+	"direction": "61st-Baltimore",
+	"day": "Weekday",
+	"stops": [{
+		"name": "13th and Market Sts",
+		"id": "283",
+		"times": ["5:25am","5:47am","6:07am","6:27am"]
+	},
+	{
+		"name": "40th St Trolley Portal",
+		"id": "301",
+		"times": ["5:36am","5:58am","6:18am","6:38am"]
+	},
+	{
+		"name": "49th St & Baltimore Ave",
+		"id": "601",
+		"times": ["5:40am","6:02am","6:22am","6:42am"]
+	},
+	{
+		"name": "61st St & Baltimore Ave",
+		"id": "599",
+		"times": ["5:47am","6:09am","6:29am","6:49am"]
+	}]
+}
