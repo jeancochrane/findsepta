@@ -55,7 +55,8 @@ module.exports = function(grunt) {
 			},
 
 			dist: {
-				src: 'styles.css'
+				src: 'styles.css',
+				dest: 'dist/styles.css'
 			}
 		},
 
@@ -68,6 +69,11 @@ module.exports = function(grunt) {
 		},
 
 		uglify: {
+			options:{
+				compress: {
+					drop_console: true
+				}
+			},
 			js: {
 				files: {
 					'dist/scripts.min.js': ['scripts/*.js']
@@ -81,11 +87,11 @@ module.exports = function(grunt) {
 			dist: {
 				files: [
 					{src: ['assets/**'], dest: 'dist/'},
-					{src: ['*.css', 'requirements.txt'], dest: 'dist/'},
+					{src: ['*.html'], dest: 'dist/'},
 					{src: ['about/**'], dest: 'dist/'}
 				]
 			}
-		},
+		},	
 
 		replace: {
 			python: {

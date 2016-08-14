@@ -3,7 +3,7 @@
 
 import json
 import os
-from subprocess import call
+from subprocess import check_output
 
 for fname in os.listdir('lines'):
     route, ext = fname.split('.')
@@ -11,6 +11,6 @@ for fname in os.listdir('lines'):
     print fname
     print path
     if os.path.isfile(path) and ext == "geojson":
-        with open(os.path.join('extent', route + '.json'), 'w') as fout:
+        with open(os.path.join('extents', route + '.json'), 'w') as fout:
             print "route: " + route
-            call("geojson-extent < " + path, stdin=fout, shell=True)
+            fout.write(check_output("geojson-extent < " + path, shell=True))

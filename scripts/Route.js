@@ -79,17 +79,13 @@ var Route = (function() {
 	var getExtentPromise = function() {
 		return new Promise(function(resolve) {
 			$.getJSON(extentURL, function(data) {
-				resolve([[data[0], data[1]], data[2], data[3]]);
+				resolve([ [ data[0], data[1] ], [ data[2], data[3] ] ]);
 			});
 		});
 	};
 
 	var updateBuses = function() {
 		busesSourceObject.setData(busURL);
-	};
-
-	var getName = function() {
-		return name;
 	};
 
 	var getLayerIDs = function() {
@@ -114,7 +110,6 @@ var Route = (function() {
 		getBuses: getBuses,
 		getLine: getLine,
 		getStops: getStops,
-		getName: getName,
 		getExtentPromise: getExtentPromise,
 		getLayerIDs: getLayerIDs,
 		getSourceIDs: getSourceIDs,

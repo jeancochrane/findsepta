@@ -8,7 +8,6 @@ cherrypy.config.update({"log.screen": True})
 
 app = Bottle()
 busAPI = "http://www3.septa.org/api/TransitView/index.php?route="
-
 root = "."
 
 
