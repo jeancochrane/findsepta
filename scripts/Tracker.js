@@ -13,9 +13,10 @@ var Tracker = (function() {
 
         SEPTAMap.showMap();
 
-        //Restyle form and move it away from the map
+        //Add map UI
         $('header').hide();
         $('#clearButton').show();
+        $('#mapInMotion').show().addClass('motion').html('Map in Motion');
         $('.form-container').addClass('route-selection').removeClass('form-container');
         $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();

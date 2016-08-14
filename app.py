@@ -1,5 +1,6 @@
 import json
 import requests
+from datetime import datetime
 from bottle import Bottle, run, debug, static_file
 # DEV
 import cherrypy
@@ -8,10 +9,42 @@ cherrypy.config.update({"log.screen": True})
 
 app = Bottle()
 busAPI = "http://www3.septa.org/api/TransitView/index.php?route="
-scheduleAPI = "http://www.septa.org/schedules"
+scheduleURL = 'assets/schedules/',
 trolleys = [10, 11, 13, 15, 34, 36, 101, 102]
 
 root = "."
+
+
+def avg_speed(bus, route):
+    current_time = datetime.now().time()
+    day = datetime.today().weekday()
+    weekdays = [0, 1, 2, 3, 4]
+    if (day in weekdays):
+        day = "Weekday"
+    elif (day == 5):
+        day = "Saturday"
+    elif (day == 6):
+        day = "Sunday"
+
+    destination = bus.destination
+    URL = scheduleURL + route + '/' + day + '/' + destination + '.json'
+    with open(URL) as schedule_file:
+        schedule_data = json.loads(schedule_file)
+    schedule_data = schedule_data.stops
+
+    # - iterate through the list of stops
+    # - compare geolocation of ids to coordinates of bus (geopy)
+    # - save the two closest stops
+    # - distance = the distance between them along the route
+    closest_stops = {
+        "closest": "",
+        "second-closest": ""
+    }
+
+    # - iterate through the timetable of closest stop
+    # - find list index of closest time
+    # - subtract times from closest and second-closest stops
+    # - average speed = distance / time (mile/min)
 
 
 @app.route('/')
@@ -35,12 +68,13 @@ def busdata(route):
     parsed_json = json.loads(r.content)
     features = []
     for bus in parsed_json["bus"]:
+        speed = avg_speed(bus, route)
         direction = bus["Direction"]
         icon = "bus-NE"\
             if direction == "NorthBound" or direction == "EastBound"\
             else "bus-SW"
 
-        point = {
+        geometry = {
             "type": "Point",
             "coordinates": map(float, [bus["lng"], bus["lat"]])
         }
@@ -53,12 +87,12 @@ def busdata(route):
             "icon": icon,
             "block": bus["BlockID"],
             "lastUpdated": bus["Offset_sec"],
-            "speed": 0
+            "speed": speed
         }
 
         feature = {
             "type": "Feature",
-            "geometry": point,
+            "geometry": geometry,
             "properties": properties
         }
 

@@ -213,7 +213,7 @@ var SEPTAMap = (function() {
 
     //Recursive function to continually update buses based on their average speed
     //and the time since the last update
-    var animate = function(bus) {
+    var animate = function() {
 
         //Vendor prefixes for animation functions
         var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
@@ -222,7 +222,7 @@ var SEPTAMap = (function() {
         var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
 
         while (motion) {
-            var sourceID = bus.id; //no individual source IDs for buses! (they're one layer)
+            var sourceID = bus.id; 
             var elapsed_time = bus.properties.lastUpdated;
             var avg_speed = bus.properties.speed;
 
@@ -244,16 +244,22 @@ var SEPTAMap = (function() {
         motion = true;
 
         //Change "Map in Motion" button to "Cancel" button
-        $('#mapInMotion').html('Cancel motion').addClass('cancel').click(cancelMotion);
+        $('#mapInMotion').html('Cancel motion')
+            .addClass('cancel')
+            .unbind('click', mapInMotion)
+            .click(cancelMotion);
 
         //TODO: cancel updates from SEPTA
 
         //Loop through route objects    
-        $.each(routes, function(routeName, buses) {
+        $.each(routes, function(routeName, routeObject) {
+            var layer = routeName + '-buses';
+            var bus_data = map.queryRenderedFeatures({ layers: [layer] });
+            bus_data = bus_data[0];
 
             //Loop through buses in a given route and trigger animation
-            $.each(buses, function(i, bus) {
-                Motion.avgSpeed(bus);
+            $.each(bus_data, function(i, bus) {
+                Route.avgSpeed(bus);
                 //TODO: function that jumps the icon to our best guess of its
                 //location before we animate it
                 animate(bus);
@@ -264,8 +270,11 @@ var SEPTAMap = (function() {
     //Stop bus animation and return to static data
     var cancelMotion = function() {
         motion = false;
-        $('#mapInMotion').html('Map in Motion').removeClass('cancel');
-        Tracker.init();
+        $('#mapInMotion').html('Map in Motion')
+            .removeClass('cancel')
+            .unbind('click', cancelMotion)
+            .click(mapInMotion);
+        //Tracker.init();
     };
 
     return {
