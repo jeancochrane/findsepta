@@ -1,19 +1,19 @@
 @charset "UTF-8";
 
 @font-face {
-  font-family: "untitled-font-1";
-  src:url("untitled-font-1.eot");
-  src:url("untitled-font-1.eot?#iefix") format("embedded-opentype"),
-    url("untitled-font-1.woff") format("woff"),
-    url("untitled-font-1.ttf") format("truetype"),
-    url("untitled-font-1.svg#untitled-font-1") format("svg");
+  font-family: "septa-tracker-icons";
+  src:url("fonts/septa-tracker-icons.eot");
+  src:url("fonts/septa-tracker-icons.eot?#iefix") format("embedded-opentype"),
+    url("fonts/septa-tracker-icons.woff") format("woff"),
+    url("fonts/septa-tracker-icons.ttf") format("truetype"),
+    url("fonts/septa-tracker-icons.svg#septa-tracker-icons") format("svg");
   font-weight: normal;
   font-style: normal;
 
 }
 
 [data-icon]:before {
-  font-family: "untitled-font-1" !important;
+  font-family: "septa-tracker-icons" !important;
   content: attr(data-icon);
   font-style: normal !important;
   font-weight: normal !important;
@@ -27,7 +27,7 @@
 
 [class^="icon-"]:before,
 [class*=" icon-"]:before {
-  font-family: "untitled-font-1" !important;
+  font-family: "septa-tracker-icons" !important;
   font-style: normal !important;
   font-weight: normal !important;
   font-variant: normal !important;
@@ -46,4 +46,7 @@
 }
 .icon-home:before {
   content: "\62";
+}
+.icon-github:before {
+  content: "\64";
 }

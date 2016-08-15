@@ -105,8 +105,8 @@ var SEPTAMap = (function() {
             .setHTML(
                 "<h1>Route #" + bus.properties.route + "</h1>" +
                 "Direction: <i>" + bus.properties.direction + "</i><br>" +
-                "Destination: <i>" + bus.properties.destination + "</i><br><br>" +
-                "Last updated " + formatTime(bus.properties.lastUpdated) + " seconds ago" 
+                "Destination: <i>" + bus.properties.destination + "</i><br>" +
+                "Position last updated <i>" + formatTime(bus.properties.lastUpdated) + " seconds</i> ago" 
             )
             .addTo(map);
 
@@ -191,6 +191,7 @@ var SEPTAMap = (function() {
     var clearAllRoutes = function() {
         console.log(routes);
         $.each(routes, removeRoute);
+        $(".mapboxgl-popup-close-button").click();
     };
 
     var hideStops = function() {

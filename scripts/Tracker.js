@@ -20,7 +20,7 @@ var Tracker = (function() {
         $('.form-container').addClass('route-selection').removeClass('form-container');
         $('.route-selection').draggable();
         if ($(window).width() > 768) {
-            $('.about').click(showAbout);    
+            $('.about-icon:nth-child(2)').click(showAbout);    
         }
         SEPTAMap.addRoute(route);
         
@@ -29,8 +29,8 @@ var Tracker = (function() {
 
     var showAbout = function(e) {
         e.preventDefault();
-        $("#dialog").load("about .about-container",  function() {
-            $(".about-container").removeClass("about-container");
+        $("#dialog").load("about.html .about-page-container",  function() {
+            $(".about-page-container").removeClass("about-page-container");
             $("#dialog").dialog({
                 height: $(window).height() * 0.9,
                 width: $(window).width() * 0.8,
