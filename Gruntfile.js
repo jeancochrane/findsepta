@@ -56,7 +56,7 @@ module.exports = function(grunt) {
 
 			dist: {
 				src: 'styles.css',
-				dest: 'dist/styles.css'
+				dest: 'styles-prefixed.css'
 			}
 		},
 
@@ -87,7 +87,7 @@ module.exports = function(grunt) {
 			dist: {
 				files: [
 					{src: ['assets/**'], dest: 'dist/'},
-					{src: ['*.html'], dest: 'dist/'},
+					{src: ['*.html', 'styles-prefixed.css'], dest: 'dist/'},
 					{src: ['about/**'], dest: 'dist/'}
 				]
 			}
@@ -106,7 +106,6 @@ module.exports = function(grunt) {
 
 	});
 
-	var server;
 	grunt.registerTask('app', function() {
 		var server = spawn('python', ['app.py'])
 			.on('error', function(err) {

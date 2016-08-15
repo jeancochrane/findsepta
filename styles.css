@@ -1,5 +1,6 @@
 html {
   box-sizing: border-box;
+  font-size: .8em;
 }
 
 body {
@@ -26,14 +27,34 @@ form {
   display: block;
 }
 
+form button {
+  border-radius: 10px;
+  box-shadow: 1px 1px 3px #666666;
+  font-size: .9em;
+  color: #000000;
+  background: #ffffff;
+  padding: 4px 9px 4px 9px;
+  border: solid #707070 2px;
+  margin-left: 10px;
+  user-select: none;
+  transition: all 150ms ease;
+}
+
+
+form button:active {
+  background: rgb(212, 247, 175);
+  box-shadow: none;
+}
+
+form button:focus {
+  outline: none;
+}
+
 .route-selection {
     position: absolute;
-    display: -ms-flexbox;
     display: flex;
-    -ms-flex-align: center;
-        align-items: center;
-    -ms-flex-pack: center;
-        justify-content: center;
+    align-items: center;
+    justify-content: center;
     z-index: 2;
     background-color: rgb(170, 185, 241);
     border-radius: 15px;
@@ -47,14 +68,10 @@ form {
 }
 
 .form-container {
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-direction: column;
-      flex-direction: column;
-  -ms-flex-align: center;
-      align-items: center;
-  -ms-flex-pack: center;
-      justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: 600px;
   z-index: 2;
 }
@@ -96,6 +113,21 @@ form {
 /////////////////*/
 
 @media (min-width: 768px) {
+
+  select {
+    font-size: 1em;
+  }
+
+  html {
+    font-size: 1em;
+  }
+
+  form button:hover {
+  background: rgb(212, 247, 175);
+  cursor: pointer;
+}
+
+
   /* bigger selection box */
   .inner-wrapper {
     padding: 60px;
