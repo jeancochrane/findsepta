@@ -6,6 +6,7 @@
     <meta charset="utf-8">
     <meta name="author" content="Jean Cochrane, Kalil Smith-Nuevelle">
     <title>Where's SEPTA?</title>
+    <link rel="stylesheet" href="normalize.css">
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600' rel='stylesheet' type='text/css'>
     <link href="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css" rel="stylesheet"></link>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
@@ -13,6 +14,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js"></script>
     <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="assets/icon-font/styles.css">
+
     <!-- build:js scripts.min.js -->    
     <script src="scripts/Route.js"></script>
     <script src="scripts/SEPTAMap.js"></script>
@@ -21,9 +24,9 @@
 </head>
 
 <body>
-    <div class="form-container">
-        <div class="inner-wrapper">
-            <header>Find SEPTA!</header>
+    <div class="container">
+        <div class="form-container">
+            <h1>Find SEPTA!</h1>
             <form action="#">
                 <label for="route">Select your route:</label>
                 <select name="route" id="route">
@@ -172,9 +175,21 @@
                 <button type="submit">Find SEPTA</button>
                 <button id="clearButton" type="button">Clear Routes</button>
             </form>
+            <a href="about" class="about"><i class="icon-about"></i></a>
         </div>
     </div>
     <div id="map"></div>
+    <div id="dialog"></div>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-54747664-2', 'auto');
+  ga('send', 'pageview');
+
+    </script>
 </body>
 
 </html>

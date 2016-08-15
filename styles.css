@@ -11,17 +11,65 @@ body {
   background: rgba(170, 185, 241, 0.4);
 }
 
+.ui-dialog {
+  background: rgba(170, 185, 241, 0.9);
+  padding: 0;
+}
+
+.ui-dialog-titlebar {
+  background: #000;
+  opacity: 0.75;
+  color: #fff;
+  font-size: 2.5em;
+  text-align: center;
+}
+
+.ui-dialog h1 {
+  font-size: 2em;
+}
+
 body, 
 html {
   height: 100%;
 }
 
-header {
+a {
+  text-decoration: none;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-container h1 {
   font-size: 3em;
   font-weight: bold;
   margin-bottom:0.5em;
   display: block;
 }
+
+header {
+  background: #000;
+  opacity: 0.75;
+  height: 45px;
+  margin-bottom: 10px;
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+header a {
+  display: inline-flex;
+  font-size: 45px;
+  color: #fff;
+} 
+
+header h1
 
 form {
   display: block;
@@ -50,12 +98,28 @@ form button:focus {
   outline: none;
 }
 
+.about {
+  color: #000;
+  opacity: 0.8;
+  font-size: 1.5em;
+  align-self: flex-end;
+  margin-left: auto;
+  bottom: -20px;
+  right: -15px;
+  position: relative;
+}
+
+.route-selection .about {
+  position: absolute;
+}
+
 .route-selection {
     position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    top: 0;
+    left: 0;
     z-index: 2;
+    display: flex;
+    align-items: flex-start;
     background-color: rgb(170, 185, 241);
     border-radius: 15px;
     opacity: .9;
@@ -65,6 +129,7 @@ form button:focus {
 
 .route-selection label {
 	display: block;
+  font-weight: bold;
 }
 
 .form-container {
@@ -72,23 +137,18 @@ form button:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 600px;
   z-index: 2;
+  padding: 30px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
+
 }
 
 .form-container label {
   font-size: 1.5em;
   margin-bottom: 1em;
   display: block;
-}
-
-.inner-wrapper {
-  padding: 30px;
-  border-radius: 10px;
-  background: #ffffff;
-  -webkit-box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
-  -moz-box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
-  box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
 }
 
 #map {
@@ -108,11 +168,61 @@ form button:focus {
     max-width: 400px;
 }
 
+.about-container {
+  padding: 0 1em 1em;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+h1 {
+  margin: 0;
+}
+
+.route-selection .about {
+  top: 5px;
+  right: 5px;
+}
+
+
 /*/////////////////
 // MEDIA QUERIES //
 /////////////////*/
 
+@media (max-width: 340px) {
+  select {
+    display: block;
+    margin-top: 6px;
+  }
+
+  .route-selection {
+    width: 100px;
+    align-items: flex-start;
+  }
+  form button {
+    margin-left: 0;
+    margin-top: 6px;
+  }
+
+  .about {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+  }
+}
+
 @media (min-width: 768px) {
+
+
+  .about-container {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding: 1em;
+    margin-left: 25%;
+    margin-right: 25%;
+    box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
+    background: #fff;
+    border-radius: 10px;
+  }
 
   select {
     font-size: 1em;
@@ -126,15 +236,25 @@ form button:focus {
   background: rgb(212, 247, 175);
   cursor: pointer;
 }
+  
+  .about:hover {
+    opacity: 0.4;
+  }
 
+  .about {
+    bottom: -30px;
+    right: -40px;
+    position: relative;
+    transition: all 150ms ease;
+  }
 
   /* bigger selection box */
-  .inner-wrapper {
-    padding: 60px;
+  .form-container {
+    margin-bottom: auto;
+    margin-top: 10%;
+    padding: 40px 60px;
     border-radius: 10px;
     background: #ffffff;
-    -webkit-box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
-    -moz-box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
     box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
   }
 }

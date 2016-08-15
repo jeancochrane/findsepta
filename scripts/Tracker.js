@@ -16,13 +16,28 @@ var Tracker = (function() {
     //Restyle form and move it away from the map
         $('header').hide();
         $('#clearButton').show();
+        $('.container h1').hide();
         $('.form-container').addClass('route-selection').removeClass('form-container');
-        $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();
-        
+        if ($(window).width() > 768) {
+            $('.about').click(showAbout);    
+        }
         SEPTAMap.addRoute(route);
         
         $('form').submit(selectRoute);
+    };
+
+    var showAbout = function(e) {
+        e.preventDefault();
+        $("#dialog").load("about .about-container",  function() {
+            $(".about-container").removeClass("about-container");
+            $("#dialog").dialog({
+                height: $(window).height() * 0.9,
+                width: $(window).width() * 0.8,
+                modal: true,
+                title: "About"
+            });            
+        });
     };
 
     var selectRoute = function(e) {
