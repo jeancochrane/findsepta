@@ -17,6 +17,12 @@ var SEPTAMap = (function() {
     };
     var motion = false;
 
+    //Vendor prefixes for animation functions
+    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                        window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+    var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+
 	var init = function() {
 		map = new mapboxgl.Map({
 	        container: 'map',
@@ -213,25 +219,30 @@ var SEPTAMap = (function() {
 
     //Recursive function to continually update buses based on their average speed
     //and the time since the last update
-    var animate = function() {
-
-        //Vendor prefixes for animation functions
-        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-
-        var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
-
+    var animate = function(bus, line, timer) {
         while (motion) {
-            var sourceID = bus.id; 
-            var elapsed_time = bus.properties.lastUpdated;
-            var avg_speed = bus.properties.speed;
+            if (timer) {
+                var elapsed_time = new Date().getTime(); // milliseconds
+                elapsed_time = elapsed_time - timer;
+            } else {
+                // var elapsed_time = int(bus.properties.lastUpdated) * 1000; // milliseconds
+            }
+
+            var avg_speed = bus.properties.speed / 1000; // in feet/millisec
+            var coordinates = bus.geometry.coordinates;
 
             //TODO: use turf.js to calculate next position based on avg speed
+            var position;
+
+            //Reset timer to allow for continual animation
+            timer = new Date().getTime();
+
+            bus.geometry.coordinates = position;
 
             //update source to reflect new position
-            map.getSource(sourceID).setData(bus.properties.coordinates);
+            map.getSource(sourceID).setData(bus);
 
-            requestAnimationFrame(animate);
+            requestAnimationFrame(animate(bus, timer));
 
         } if (!motion) {
             cancelAnimationFrame();
@@ -249,25 +260,23 @@ var SEPTAMap = (function() {
             .unbind('click', mapInMotion)
             .click(cancelMotion);
 
-        //TODO: cancel updates from SEPTA
-
         //Loop through route objects    
         $.each(routes, function(routeName, routeObject) {
-            var layer = routeName + '-buses';
-            var bus_data = map.queryRenderedFeatures({ layers: [layer] });
+            var bus_layer = routeName + '-buses';
+            var line_layer = routeName + '-line';
+            var bus_data = map.queryRenderedFeatures({ layers: [bus_layer] });
+            var line_data = map.queryRenderedFeatures({ layers: [line_layer] });
             bus_data = bus_data[0];
+            line_data = line_data.features.geometry;
 
             //Loop through buses in a given route and trigger animation
             $.each(bus_data, function(i, bus) {
-                Route.avgSpeed(bus);
-                //TODO: function that jumps the icon to our best guess of its
-                //location before we animate it
-                animate(bus);
+                animate(bus, line_data);
             });
         });
     };
 
-    //Stop bus animation and return to static data
+    //Stop bus animation 
     var cancelMotion = function() {
         motion = false;
         $('#mapInMotion').html('Map in Motion')
@@ -275,6 +284,11 @@ var SEPTAMap = (function() {
             .unbind('click', cancelMotion)
             .click(mapInMotion);
         //Tracker.init();
+    };
+
+    var debugMap = function() {
+
+
     };
 
     return {

@@ -68,7 +68,12 @@ def busdata(route):
     parsed_json = json.loads(r.content)
     features = []
     for bus in parsed_json["bus"]:
-        speed = avg_speed(bus, route)
+        # speed = avg_speed(bus, route)
+        if route == '34':
+            speed = 14.66  # feet/sec
+        else:
+            speed = 0
+
         direction = bus["Direction"]
         icon = "bus-NE"\
             if direction == "NorthBound" or direction == "EastBound"\
