@@ -2,7 +2,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamVhbmNvY2hyYW5lIiwiYSI6ImNpaDJndHlsMzB4cXN2a
 var Tracker = (function() {
     
     var bindFunctions = function() {
-        $('form').submit(formSubmit);
+        $('#formTracker').submit(formSubmit);
+        $('#formDebugger').submit(debugSubmit);
+        $('#formNewDebugger').submit(debugNewSubmit);
         $('#clearButton').click(SEPTAMap.clearAllRoutes);
         $('#mapInMotion').click(SEPTAMap.mapInMotion);
     };
@@ -23,13 +25,62 @@ var Tracker = (function() {
         
         SEPTAMap.addRoute(route);
         
-        $('form').submit(selectRoute);
+        $('#formTracker').submit(selectRoute);
     };
+
+    var debugSubmit = function(e) {
+        e.preventDefault();
+        var route = $(this).serializeArray()[0].value;
+
+        SEPTAMap.showMap();
+
+        //Add map UI
+        $('header').hide();
+        $('#clearButton').show();
+        $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.inner-wrapper').removeClass('inner-wrapper');
+        $('.route-selection').draggable();
+
+        SEPTAMap.debugRoute(route);
+
+        $('#formDebugger').submit(selectDebugRoute);
+    };
+
+    var debugNewSubmit = function(e) {
+        e.preventDefault();
+        var route = $(this).serializeArray()[0].value;
+
+        SEPTAMap.showMap();
+
+        //Add map UI
+        $('header').hide();
+        $('#clearButton').show();
+        $('.form-container').addClass('route-selection').removeClass('form-container');
+        $('.inner-wrapper').removeClass('inner-wrapper');
+        $('.route-selection').draggable();
+
+        SEPTAMap.debugNewRoute(route);
+
+        $('#formNewDebugger').submit(selectDebugNewRoute);
+    };
+
 
     var selectRoute = function(e) {
         e.preventDefault();
         var route = $(this).serializeArray()[0].value;
         SEPTAMap.addRoute(route);
+    };
+
+    var selectDebugRoute = function(e) {
+        e.preventDefault();
+        var route = $(this).serializeArray()[0].value;
+        SEPTAMap.debugRoute(route);
+    };
+
+    var selectDebugNewRoute = function(e) {
+        e.preventDefault();
+        var route = $(this).serializeArray()[0].value;
+        SEPTAMap.debugNewRoute(route);
     };
 
     var init = function() {

@@ -3,6 +3,7 @@ var Route = (function() {
 		busesSourceObject,
 		stopsURL = 'assets/stops/',
 		lineURL = 'assets/lines/',
+		newLineURL = 'assets/new_lines/',
 		busURL = 'busdata/',
 		extentURL = 'assets/extents/';
 
@@ -76,10 +77,29 @@ var Route = (function() {
 		return {source: busesSourceObject, id: id, layer: layer};
 	};
 
+	//promise object returns extent array
 	var getExtentPromise = function() {
 		return new Promise(function(resolve) {
 			$.getJSON(extentURL, function(data) {
 				resolve([[data[0], data[1]], data[2], data[3]]);
+			});
+		});
+	};
+
+	//promise object returns line data (for debugging)
+	var getLinePromise = function() {
+		return new Promise(function(resolve) {
+			$.getJSON(lineURL, function(data) {
+				resolve(data);
+			});
+		});
+	};
+
+	//promise object returns line data (for debugging new line data)
+	var getNewLinePromise = function() {
+		return new Promise(function(resolve) {
+			$.getJSON(newLineURL, function(data) {
+				resolve(data);
 			});
 		});
 	};
@@ -113,6 +133,8 @@ var Route = (function() {
 		updateBuses: updateBuses,
 		getBuses: getBuses,
 		getLine: getLine,
+		getLinePromise: getLinePromise,
+		getNewLinePromise: getNewLinePromise,
 		getStops: getStops,
 		getName: getName,
 		getExtentPromise: getExtentPromise,

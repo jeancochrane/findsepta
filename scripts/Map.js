@@ -13,7 +13,8 @@ var SEPTAMap = (function() {
         buses: [],
         stops: [],
         hover: [],
-        line: []
+        line: [],
+        debugLayers: []
     };
     var motion = false;
 
@@ -53,24 +54,26 @@ var SEPTAMap = (function() {
     	//Display information about buses and stops on click
     	map.on('click', function(e) {
     		var buses = getFeatures(e.point, layerIDs.buses);
+            var stops = getFeatures(e.point, layerIDs.stops);
+            var lines = getFeatures(e.point, layerIDs.debugLayers);
 
 	        if (buses.length) {
 	        	displayBusInfo(buses[0]);
-	        } else {
-	        	var stops = getFeatures(e.point, layerIDs.stops);
-
-	        	if (stops.length) {
-	        		displayStopInfo(stops[0]);
-	        	}
-	        }
-    	});
+	        } else if (stops.length) {
+	        	displayStopInfo(stops[0]);
+            } else if (lines.length) {
+                displayLineInfo(lines[0]);
+                console.log(lines[0]);
+            }
+        });
         
         map.on('mousemove', function(e) {
         	var buses = getFeatures(e.point, layerIDs.buses);
         	var stops = getFeatures(e.point, layerIDs.stops);
+            var lines = getFeatures(e.point, layerIDs.debugLayers);
 
         	//Change cursor to pointer over bus or stop
-        	canvas.style.cursor = (buses.length || stops.length) ? 'pointer' : '';
+        	canvas.style.cursor = (buses.length || stops.length || lines.length) ? 'pointer' : '';
 
         	//Add hover effect for stops
         	if (stops.length) {
@@ -113,10 +116,21 @@ var SEPTAMap = (function() {
                 "<h1>Route #" + bus.properties.route + "</h1>" +
                 "Direction: <i>" + bus.properties.direction + "</i><br>" +
                 "Destination: <i>" + bus.properties.destination + "</i><br><br>" +
-                "Last updated " + formatTime(bus.properties.lastUpdated) + " seconds ago" 
+                "Last updated " + formatTime(bus.properties.lastUpdated) + " seconds ago"
             )
             .addTo(map);
 
+    };
+
+    //Show popup with information about a line segment (for debugging purposes)
+    var displayLineInfo = function(line) {
+        var popup = new mapboxgl.Popup()
+            .setLngLat(line.geometry.coordinates[0])
+            .setHTML(
+                "<h1>Segment index #" + line.layer.id + "</h1>" +
+                "Coordinates: " + JSON.stringify(line.geometry.coordinates)
+            )
+            .addTo(map);
     };
 
     function formatTime(str) {
@@ -165,6 +179,127 @@ var SEPTAMap = (function() {
         routes[routeName] = route;
 
         zoomToFit(route);
+    };
+
+    //maps line segments comprising route geojson files in order to determine
+    //how the segments are stored
+    var debugRoute = function(routeName) {
+        //clear all visible routes
+        clearAllRoutes();
+
+        //instantiate a new route object
+        var route = Route();
+        route.init(routeName);
+        console.log("debugging route: ");
+        console.log(route);
+        zoomToFit(route);
+
+        //wait to GET line data, then initiate plotting
+        route.getLinePromise().then(function(line) {
+            var lineStrings = line.features[0].geometry.geometries;
+            var index = 0;
+            var max = (lineStrings.length)-1;
+
+            //plot route lines in order
+            var plotLineStrings = function() {
+                if (max > index) {
+                    var segment = lineStrings[index];
+                    console.log("Debugging string #" + index);
+                    console.log(segment);
+                    map.addSource(index.toString(), {
+                        type: 'geojson',
+                        data: {
+                            "type": "FeatureCollection",
+                            "features": [{
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "LineString",
+                                    "coordinates": segment.coordinates
+                                }
+                            }]
+                        }
+                    });
+
+                    var segmentLayer = {
+                        "id": index.toString(),
+                        "type": "line",
+                        "source": index.toString(),
+                        "layout": {
+                            "line-join": "round"
+                        },
+                        "paint": {
+                            "line-color": "#b7b7b7",
+                            "line-width": 5
+                        }
+                    };
+
+                    map.addLayer(segmentLayer);
+                    layerIDs.debugLayers.push(segmentLayer.id);
+                    index++;
+                    console.log(index);
+                }
+                setTimeout(plotLineStrings, 1000);
+            };
+            plotLineStrings();
+        });
+    };
+
+    var debugNewRoute = function(routeName) {
+        //instantiate a new route object
+        var route = Route();
+        route.init(routeName);
+        console.log("debugging route: ");
+        console.log(route);
+        zoomToFit(route);
+
+        //wait to GET line data, then initiate plotting
+        route.getNewLinePromise().then(function(line) {
+            var lineStrings = line.features[0].geometry.geometries;
+            var index = 0;
+            var max = (lineStrings.length)-1;
+
+            //plot route lines in order
+            var plotLineStrings = function() {
+                if (max > index) {
+                    var segment = lineStrings[index];
+                    console.log("Debugging string #" + index);
+                    console.log(segment);
+                    map.addSource(index.toString(), {
+                        type: 'geojson',
+                        data: {
+                            "type": "FeatureCollection",
+                            "features": [{
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "LineString",
+                                    "coordinates": segment.coordinates
+                                }
+                            }]
+                        }
+                    });
+
+                    var segmentLayer = {
+                        "id": index.toString(),
+                        "type": "line",
+                        "source": index.toString(),
+                        "layout": {
+                            "line-join": "round"
+                        },
+                        "paint": {
+                            "line-color": "#b7b7b7",
+                            "line-width": 5
+                        }
+                    };
+
+                    map.addLayer(segmentLayer);
+                    layerIDs.debugLayers.push(segmentLayer.id);
+                    index++;
+                    console.log(index);
+                }
+                setTimeout(plotLineStrings, 1000);
+            };
+            plotLineStrings();
+        });
     };
 
     //Fit map to route
@@ -286,11 +421,6 @@ var SEPTAMap = (function() {
         //Tracker.init();
     };
 
-    var debugMap = function() {
-
-
-    };
-
     return {
         mapInMotion: mapInMotion,
         cancelMotion: cancelMotion,
@@ -300,6 +430,7 @@ var SEPTAMap = (function() {
     	setUpdateInterval: setUpdateInterval,
     	showMap: showMap,
     	addRoute: addRoute,
+        debugRoute: debugRoute,
     	removeRoute: removeRoute,
     	init: init
 	};
