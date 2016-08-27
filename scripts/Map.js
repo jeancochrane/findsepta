@@ -178,7 +178,7 @@ var SEPTAMap = (function() {
         
         routes[routeName] = route;
 
-        zoomToFit(route);
+        //zoomToFit(route);
     };
 
     //maps line segments comprising route geojson files in order to determine
@@ -192,7 +192,6 @@ var SEPTAMap = (function() {
         route.init(routeName);
         console.log("debugging route: ");
         console.log(route);
-        zoomToFit(route);
 
         //wait to GET line data, then initiate plotting
         route.getLinePromise().then(function(line) {
@@ -244,27 +243,28 @@ var SEPTAMap = (function() {
     };
 
     //for debugging edited route lines
-    var debugNewRoute = function(routeName, direction) {
+    var debugNewRoute = function(routeName, routeDirection) {
         //instantiate a new route object
         var route = Route();
         route.init(routeName);
         console.log("debugging route: ");
         console.log(route);
-        zoomToFit(route);
 
         //wait to GET line data, then initiate plotting
         route.getNewLinePromise().then(function(line) {
             //determine which set of coordinates correspond to the right direction
-            var featureIndex = $.each(line.features, function(i, feature) {
-                if (feature.properties.direction === direction) {
-                    return i;
+            var featureIndex;
+            $.each(line.features, function(i, feature) {
+                if (feature.properties.direction === routeDirection) {
+                    featureIndex = i;
+                    return;
                 }
             });
             console.log(featureIndex); //for testing
 
             //instantiate loop counter
             var coordIndex = 0;
-            var coordSet = features[featureIndex].geometry.coordinates;
+            var coordSet = line.features[featureIndex].geometry.coordinates;
             var coordMax = (coordSet.length)-1;
 
             //plot route lines in order
