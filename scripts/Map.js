@@ -236,7 +236,6 @@ var SEPTAMap = (function() {
                     map.addLayer(segmentLayer);
                     layerIDs.debugLayers.push(segmentLayer.id);
                     index++;
-                    console.log(index);
                 }
                 setTimeout(plotLineStrings, 1000);
             };
@@ -244,7 +243,8 @@ var SEPTAMap = (function() {
         });
     };
 
-    var debugNewRoute = function(routeName) {
+    //for debugging edited route lines
+    var debugNewRoute = function(routeName, direction) {
         //instantiate a new route object
         var route = Route();
         route.init(routeName);
@@ -254,49 +254,55 @@ var SEPTAMap = (function() {
 
         //wait to GET line data, then initiate plotting
         route.getNewLinePromise().then(function(line) {
-            var lineStrings = line.features[0].geometry.geometries;
-            var index = 0;
-            var max = (lineStrings.length)-1;
+            //determine which set of coordinates correspond to the right direction
+            var featureIndex = $.each(line.features, function(i, feature) {
+                if (feature.properties.direction === direction) {
+                    return i;
+                }
+            });
+            console.log(featureIndex); //for testing
+
+            //instantiate loop counter
+            var coordIndex = 0;
+            var coordSet = features[featureIndex].geometry.coordinates;
+            var coordMax = (coordSet.length)-1;
 
             //plot route lines in order
             var plotLineStrings = function() {
-                if (max > index) {
-                    var segment = lineStrings[index];
-                    console.log("Debugging string #" + index);
-                    console.log(segment);
-                    map.addSource(index.toString(), {
+                if (coordMax > coordIndex) {
+                    var point = coordSet[coordIndex];
+                    console.log("Debugging point #" + coordIndex + "in feature #" + featureIndex);
+                    console.log(point);
+                    map.addSource(coordIndex.toString(), {
                         type: 'geojson',
                         data: {
                             "type": "FeatureCollection",
                             "features": [{
                                 "type": "Feature",
                                 "geometry": {
-                                    "type": "LineString",
-                                    "coordinates": segment.coordinates
+                                    "type": "Point",
+                                    "coordinates": point
                                 }
                             }]
                         }
                     });
 
-                    var segmentLayer = {
-                        "id": index.toString(),
-                        "type": "line",
-                        "source": index.toString(),
-                        "layout": {
-                            "line-join": "round"
-                        },
+                    var pointLayer = {
+                        "id": coordIndex.toString(),
+                        "type": "circle",
+                        "source": coordIndex.toString(),
                         "paint": {
-                            "line-color": "#b7b7b7",
-                            "line-width": 5
+                            "circle-radius": 6,
+                            "circle-color": "#2b60ff",
+                            "circle-opacity": 0.4
                         }
                     };
 
-                    map.addLayer(segmentLayer);
-                    layerIDs.debugLayers.push(segmentLayer.id);
-                    index++;
-                    console.log(index);
+                    map.addLayer(pointLayer);
+                    layerIDs.debugLayers.push(pointLayer.id);
+                    coordIndex++;
                 }
-                setTimeout(plotLineStrings, 1000);
+                setTimeout(plotLineStrings, 200);
             };
             plotLineStrings();
         });
@@ -431,6 +437,7 @@ var SEPTAMap = (function() {
     	showMap: showMap,
     	addRoute: addRoute,
         debugRoute: debugRoute,
+        debugNewRoute: debugNewRoute,
     	removeRoute: removeRoute,
     	init: init
 	};

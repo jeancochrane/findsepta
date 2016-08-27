@@ -49,6 +49,9 @@ var Tracker = (function() {
     var debugNewSubmit = function(e) {
         e.preventDefault();
         var route = $(this).serializeArray()[0].value;
+        console.log("Route: " + route);
+        var direction = $(this).serializeArray()[1].value;
+        console.log("Direction: " + direction);
 
         SEPTAMap.showMap();
 
@@ -59,7 +62,7 @@ var Tracker = (function() {
         $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();
 
-        SEPTAMap.debugNewRoute(route);
+        SEPTAMap.debugNewRoute(route, direction);
 
         $('#formNewDebugger').submit(selectDebugNewRoute);
     };
@@ -80,6 +83,7 @@ var Tracker = (function() {
     var selectDebugNewRoute = function(e) {
         e.preventDefault();
         var route = $(this).serializeArray()[0].value;
+        var direction = $(this).serializeArray()[1].value;
         SEPTAMap.debugNewRoute(route);
     };
 

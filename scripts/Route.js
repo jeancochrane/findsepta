@@ -123,6 +123,7 @@ var Route = (function() {
 	var init = function(routeName) {
 		name = routeName;
 		lineURL += name + ".geojson";
+		newLineURL += name + ".geojson";
 		stopsURL += name + ".geojson";
 		busURL += name;
 		extentURL += name + ".json";
