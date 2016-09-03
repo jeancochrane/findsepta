@@ -9,6 +9,10 @@ var SEPTAMap = (function() {
         styleurl: 'mapbox://styles/jeancochrane/ciqe4lxnb0002cem7a4vd0dhb',
 	};
 	var routes = {};
+    var sources = {
+        "lines": [],
+        "buses": []
+    };
     var layerIDs = {
         buses: [],
         stops: [],
@@ -181,25 +185,25 @@ var SEPTAMap = (function() {
         //zoomToFit(route);
     };
 
-    //maps line segments comprising route geojson files in order to determine
+    //Maps line segments comprising route geojson files in order to determine
     //how the segments are stored
     var debugRoute = function(routeName) {
-        //clear all visible routes
+        //Clear all visible routes
         clearAllRoutes();
 
-        //instantiate a new route object
+        //Instantiate a new route object
         var route = Route();
         route.init(routeName);
         console.log("debugging route: ");
         console.log(route);
 
-        //wait to GET line data, then initiate plotting
+        //Wait to GET line data, then initiate plotting
         route.getLinePromise().then(function(line) {
             var lineStrings = line.features[0].geometry.geometries;
             var index = 0;
             var max = (lineStrings.length)-1;
 
-            //plot route lines in order
+            //Plot route lines in order
             var plotLineStrings = function() {
                 if (max > index) {
                     var segment = lineStrings[index];
@@ -242,17 +246,17 @@ var SEPTAMap = (function() {
         });
     };
 
-    //for debugging edited route lines
+    //Alternate version of the debug function for edited route lines
     var debugNewRoute = function(routeName, routeDirection) {
-        //instantiate a new route object
+        //Instantiate a new route object
         var route = Route();
         route.init(routeName);
         console.log("debugging route: ");
         console.log(route);
 
-        //wait to GET line data, then initiate plotting
+        //Wait to GET line data, then initiate plotting
         route.getNewLinePromise().then(function(line) {
-            //determine which set of coordinates correspond to the right direction
+            //Determine which set of coordinates correspond to the right direction
             var featureIndex;
             $.each(line.features, function(i, feature) {
                 if (feature.properties.direction === routeDirection) {
@@ -260,18 +264,17 @@ var SEPTAMap = (function() {
                     return;
                 }
             });
-            console.log(featureIndex); //for testing
 
-            //instantiate loop counter
+            //Instantiate loop counter
             var coordIndex = 0;
             var coordSet = line.features[featureIndex].geometry.coordinates;
             var coordMax = (coordSet.length)-1;
 
-            //plot route lines in order
+            //Plot route lines in order
             var plotLineStrings = function() {
                 if (coordMax > coordIndex) {
                     var point = coordSet[coordIndex];
-                    console.log("Debugging point #" + coordIndex + "in feature #" + featureIndex);
+                    console.log("Debugging point #" + coordIndex + " in feature #" + featureIndex);
                     console.log(point);
                     map.addSource(coordIndex.toString(), {
                         type: 'geojson',
@@ -302,7 +305,7 @@ var SEPTAMap = (function() {
                     layerIDs.debugLayers.push(pointLayer.id);
                     coordIndex++;
                 }
-                setTimeout(plotLineStrings, 200);
+                setTimeout(plotLineStrings, 50);
             };
             plotLineStrings();
         });
@@ -329,7 +332,7 @@ var SEPTAMap = (function() {
             console.log(id);
             map.removeLayer(id);
         });
-        //remove ids from id list
+        //Remove ids from id list
         console.log(name);
         delete routes[name];
     };
@@ -358,39 +361,6 @@ var SEPTAMap = (function() {
         intervalID = setInterval(interval, updateRoutes);
     };
 
-    //Recursive function to continually update buses based on their average speed
-    //and the time since the last update
-    var animate = function(bus, line, timer) {
-        while (motion) {
-            if (timer) {
-                var elapsed_time = new Date().getTime(); // milliseconds
-                elapsed_time = elapsed_time - timer;
-            } else {
-                // var elapsed_time = int(bus.properties.lastUpdated) * 1000; // milliseconds
-            }
-
-            var avg_speed = bus.properties.speed / 1000; // in feet/millisec
-            var coordinates = bus.geometry.coordinates;
-
-            //TODO: use turf.js to calculate next position based on avg speed
-            var position;
-
-            //Reset timer to allow for continual animation
-            timer = new Date().getTime();
-
-            bus.geometry.coordinates = position;
-
-            //update source to reflect new position
-            map.getSource(sourceID).setData(bus);
-
-            requestAnimationFrame(animate(bus, timer));
-
-        } if (!motion) {
-            cancelAnimationFrame();
-            return;
-        }
-    };
-
     //Animate buses with our best guess of where they are since last update
     var mapInMotion = function() {
         motion = true;
@@ -403,21 +373,135 @@ var SEPTAMap = (function() {
 
         //Loop through route objects    
         $.each(routes, function(routeName, routeObject) {
-            var bus_layer = routeName + '-buses';
-            var line_layer = routeName + '-line';
-            var bus_data = map.queryRenderedFeatures({ layers: [bus_layer] });
-            var line_data = map.queryRenderedFeatures({ layers: [line_layer] });
-            bus_data = bus_data[0];
-            line_data = line_data.features.geometry;
-
+            var busLayer = routeName + '-buses';
+            var lineLayer = routeName + '-line';
+            var busData = map.queryRenderedFeatures({ layers: [busLayer] });
+            console.log('busData:');
+            console.log(busData);
+            var lineData = map.queryRenderedFeatures({ layers: [lineLayer] });
+            console.log('lineData:');
+            console.log(lineData);
+            
             //Loop through buses in a given route and trigger animation
-            $.each(bus_data, function(i, bus) {
-                animate(bus, line_data);
+            $.each(busData, function(i, bus) {
+                console.log('Animating bus #' + i + ' in route ' + routeName + '...');
+                animate(bus, i, lineData);
             });
         });
     };
 
-    //Stop bus animation 
+    //Recursive function to continually update buses based on their average speed
+    //and the time since the last update
+    //
+    //vars 'bus' and 'line' are geojson FeatureCollections;
+    //var 'index' is the index position of the individual bus in its source;
+    //var 'timer' is a javascript Date object corresponding to the last time the function was called
+    //
+    var animate = function(bus, index, line, timer) {
+        if (motion) {
+            var avgSpeed = bus.properties.speed / 1000; // in miles/millisec
+            var elapsedTime;
+            if (timer) {
+                elapsedTime = (new Date().getTime()) - timer; // millisecs since last animate
+            } else {
+                elapsedTime = parseInt(bus.properties.lastUpdated, 10) * 1000; // millisecs since last update
+            }
+
+            console.log("Time since last update: " + elapsedTime + " milliseconds");
+            
+            //Determine which line to use in FeatureCollection based on route direction
+            var correctLine = findCorrectLine(bus, line);
+            var routeLength = turf.lineDistance(correctLine, 'miles');
+
+            //Find endpoints (line origin and bus)
+            var origin = correctLine.geometry.coordinates[0];
+            var currentLocation = bus.geometry.coordinates;
+
+            //Determine the distance that the vehicle has already travelled as of last update
+            var routeSlice = turf.lineSlice(origin, currentLocation, correctLine);
+            var confirmedDistance = turf.lineDistance(routeSlice, 'miles');
+            console.log("Confirmed distance the vehicle has travelled: " + confirmedDistance + " miles");
+            var estimatedDistance = ((avgSpeed * elapsedTime) + confirmedDistance); //TODO: check units
+            console.log("Estimated distance travelled: " + estimatedDistance + " miles");
+
+            //If the bus has passed a route endpoint, switch its direction
+            //and recalculate estimatedDistance for the new direction
+            if (estimatedDistance > routeLength) {
+                switch(bus.properties.direction) {
+                    case ('EastBound'):
+                        bus.properties.direction = 'WestBound';
+                        findCorrectLine(bus, line);
+                        estimatedDistance -= routeLength;
+                        break;
+                    case ('WestBound'):
+                        bus.properties.direction = 'EastBound';
+                        findCorrectLine(bus, line);
+                        estimatedDistance -= routeLength;
+                        break;
+                    case ('NorthBound'):
+                        bus.properties.direction = 'SouthBound';
+                        findCorrectLine(bus, line);
+                        estimatedDistance -= routeLength;
+                        break;
+                    case ('SouthBound'):
+                        bus.properties.direction = 'NorthBound';
+                        findCorrectLine(bus, line);
+                        estimatedDistance -= routeLength;
+                        break;
+                }
+            }
+            //Update bus's coordinates to match estimated position
+            var position = turf.along(correctLine, estimatedDistance, 'miles');
+            position = position.geometry.coordinates;
+            console.log("Old position:");
+            console.log(bus.geometry.coordinates);
+            console.log("Estimated new position:");
+            console.log(position);
+            bus.geometry.coordinates = position;
+            console.log("Bus coordinates:");
+            console.log(bus.geometry.coordinates);
+
+            //Reset timer to allow for continual animation
+            timer = new Date().getTime();
+
+            //Update source to reflect new position
+            var updatedBus = map.queryRenderedFeatures({ layers: [bus.properties.route + '-buses'] });
+            updatedBus[index] = bus;
+            updatedBus = {
+                "type": "FeatureCollection",
+                "features": updatedBus
+            };
+            console.log("Test new bus object:");
+            console.log(JSON.stringify(updatedBus));
+
+            map.getSource(bus.properties.route + '-buses').setData(updatedBus);
+            console.log("Updated bus coordinates:");
+            var testBus = map.queryRenderedFeatures({ layers: [bus.properties.route + '-buses'] });
+            console.log(testBus[index].geometry.coordinates);
+
+            //requestAnimationFrame(animate(bus, index, line, timer));
+
+        } else if (!motion) {
+            cancelAnimationFrame();
+            return;
+        }
+    };
+
+    //Get the correct line feature based on the direction of the vehicle
+    //(for animate function)
+    var findCorrectLine = function(bus, line) {
+        var correctLine;
+        $.each(line, function (i, feature) {
+            if (feature.properties.direction === bus.properties.direction) {
+                correctLine = feature;
+            } else {
+                console.log(feature.properties.direction + " is not equal to " + bus.properties.direction);
+            }
+        });
+        return correctLine;
+    };
+
+    //Stop bus animation when user clicks 'cancel' button
     var cancelMotion = function() {
         motion = false;
         $('#mapInMotion').html('Map in Motion')

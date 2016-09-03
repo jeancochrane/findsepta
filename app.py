@@ -70,7 +70,7 @@ def busdata(route):
     for bus in parsed_json["bus"]:
         # speed = avg_speed(bus, route)
         if route == '34':
-            speed = 14.66  # feet/sec
+            speed = 0.00278  # miles/sec
         else:
             speed = 0
 

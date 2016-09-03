@@ -42,8 +42,14 @@ var Route = (function() {
 
 	var getLine = function() {
 		var id = name + "-line";
-		var source = new mapboxgl.GeoJSONSource({data: lineURL});
-
+		var source;
+		//Manually set the new 34 line for Map in Motion debugging
+		if (id === '34-line') {
+			source = new mapboxgl.GeoJSONSource({data: newLineURL});
+		} else {
+			source = new mapboxgl.GeoJSONSource({data: lineURL});
+		}
+		console.log(JSON.stringify(source));
 		var layer = {
 			"id": id,
 	        "type": "line",

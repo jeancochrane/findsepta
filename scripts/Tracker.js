@@ -19,6 +19,7 @@ var Tracker = (function() {
         $('header').hide();
         $('#clearButton').show();
         $('#mapInMotion').show().addClass('motion').html('Map in Motion');
+        $('#formNewDebugger').hide();
         $('.form-container').addClass('route-selection').removeClass('form-container');
         $('.inner-wrapper').removeClass('inner-wrapper');
         $('.route-selection').draggable();
