@@ -1,4 +1,4 @@
-# !Python2.7
+#! python2.7
 #
 # schedule_scraper.py is a script for downloading, parsing, and converting
 # SEPTA schedule data from HTML tables to JSON.
@@ -6,16 +6,22 @@
 # Since bus and trolley schedules are hosted on two distinct pages, this
 # script runs twice – once for each type of vehicle.
 #
-# Requires requests and bs4 modules.
+# Creates a folder in the current working directory called 'schedules' that
+# contains every schedule indexed by route, day of the week, and destination.
+#
+# Required modules:
+# 	x. requests (https://docs.python-requests.org/en/master/)
+#	x. bs4 (https://www.crummy.com/software/BeautifulSoup/)
 
 
-import requests
-import json
-import sys
 import os
+import json
+import errno
+import requests
 from bs4 import BeautifulSoup
 
-
+# scrape(): crawls a page containing lists of trolley or bus schedules and
+# initiates a conversion function for each one.
 def scrape(starting_url):
 	# Open the starting URL [bus or trolley page] as a Soup object.
 	page = requests.get(starting_url)
@@ -36,7 +42,9 @@ def scrape(starting_url):
 			url = link.get('href')
 			convert(url)
 
-
+# convert(): takes a specific schedule URL and parses the data,
+# creating a proper directory path and saving the data as JSON
+# in that location.
 def convert(schedule_url):
 	# Open the page with schedule data as a Soup object.
 	page = requests.get(schedule_url)
@@ -78,28 +86,74 @@ def convert(schedule_url):
 	# Create an array containing each column of the schedule.
 	columns = soup.table.tbody.find_all("td", height="30px")
 
-	# Loop through the column array to parse stop times.
-	for column in columns:
+	# Loop through the columns array to parse stop times.
+	for index, column in enumerate(columns):
 
-		# TODO: Isolate stop times as a list and create an array.
+		# Separate stop times for a given column and remove
+		# most of the extraneous characters.
 		times = column.get_text().split(u'\n')[1].split(u'\xa0')
 
-		# TODO: select() all <tr> elements in the column (produces an array).
+		# Clean stop times that contain em-dashes or are empty.
+		correct_times = []
+		for time in times:
+			clean_times(time, correct_times)
 
-		# TODO: Append the text from each <tr> element to the 'times' array.
+		# Add times array to the corresponding dictionary in the stops array.
+		stops[index]["times"] = correct_times
 
-		# TODO: Create a dictionary containing stop, id, and times, and append it to 
-		# the stops array.
-
-	# TODO: Create a dictionary containing route, day, direction, and stops keys.
+	# Create a dictionary containing route, day, direction, and stops keys.
 	# Assign them the values of their variables.
+	data = {
+		"route": route,
+		"destination": destination,
+		"day": day,
+		"stops": stops
+	}
 
-	# TODO: Make a directory path for the data using route, day, and direction.
+	# Make a directory path for the data using route, day, and direction.
+	file_path = os.path.join('schedules', route, day)
+	try:
+		os.makedirs(file_path)
+	except OSError as exc:
+		if exc.errno == errno.EEXIST and os.path.isdir(file_path):
+			pass
+		else:
+			raise
+	file_name = destination + '.json'
+	file_path = os.path.join(file_path, file_name)
+	json_file = open(file_path, 'w')
+	print('Saving data to %s...' % file_path)
 
-	# TODO: Convert data to JSON, and dump the file.
+	# Convert data to JSON, dump the file, and close it.
+	json_file = open(file_path, 'w')
+	json.dump(data, json_file)
+	json_file.close()
 
 	print('Done converting %s.' % schedule_url)
 	print('-----------------------------------')
 
-	
 
+
+# When the parser creates an array out of stop times, it sometimes messes up
+# by smashing together em-dashes or including empty times. clean_times()
+# fixes those mistakes and returns a corrected array of times.
+def clean_times(item, lst):
+	# Omit items that are empty.
+	if (len(item) == 0):
+		return
+
+	# If the time contains an em-dash, separate it and call the function again.
+	elif (u'\u2014') in item:
+		str1 = item[:1]
+		str2 = item[1:]
+		lst.append(str1)
+		clean_times(str2, lst)
+
+	# If the time looks good, append it to the list.
+	else:
+		lst.append(item)
+
+
+# Run the scraper for bus and trolley pages.
+scrape('https://www.septa.org/schedules/bus/')
+scrape('https://www.septa.org/schedules/trolley/')
