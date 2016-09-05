@@ -67,7 +67,7 @@ def busdata(route):
 # DEV
 @app.route('/<filepath:path>')
 def static(filepath):
-    return static_file(filepath, ".")
+    return static_file(filepath, root)
 # ENDDEV
 
 # BUILD
