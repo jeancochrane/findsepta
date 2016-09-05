@@ -1,10 +1,9 @@
 #! python2.7
 #
+# coding: utf-8
+#
 # schedule_scraper.py is a script for downloading, parsing, and converting
 # SEPTA schedule data from HTML tables to JSON.
-#
-# Since bus and trolley schedules are hosted on two distinct pages, this
-# script runs twice – once for each type of vehicle.
 #
 # Creates a folder in the current working directory called 'schedules' that
 # contains every schedule indexed by route, day of the week, and destination.
@@ -39,7 +38,7 @@ def scrape(starting_url):
 	else:
 		# Iterate through the array of links and convert each one.
 		for link in links:
-			url = link.get('href')
+			url = 'http://www.septa.org' + link.get('href')
 			convert(url)
 
 # convert(): takes a specific schedule URL and parses the data,
@@ -53,23 +52,25 @@ def convert(schedule_url):
 		page.raise_for_status()
 	except Exception as exc:
 		print('There was a problem with %s: %' % schedule_url, exc)
-		continue
 	soup = BeautifulSoup(page.text, 'html.parser')
 
 	# Parse route number and assign it to a variable.
 	header = soup.select('#sched_top h1')
 	route_header = header[0].get_text().split()
 	if route_header[0] == "LUCY":
-		route = route_header[0]
+		route = route_header[0] + route_header[1]
 	else:
 		route = route_header[1]
 
-	# Parse destination and assign it to a variable.
-	destination = header[0].get_text().split("|")[1].split("to")[1]
-
 	# Parse day of the week and assign it to a variable.
-	span = soup.select('#sched_top span')
-	day = span[0].get_text().split()[0]
+	span = soup.select('#sched_top span')[0].get_text()
+	day = span.split()[0]
+
+	# Parse destination and assign it to a variable.
+	if "to" in span.split():
+		destination = span.split("to ")[1]
+	else:
+		destination = span.split("| ")[1]
 
 	# Initialize an empty 'stops' array.
 	stops = []
@@ -155,5 +156,5 @@ def clean_times(item, lst):
 
 
 # Run the scraper for bus and trolley pages.
-scrape('https://www.septa.org/schedules/bus/')
-scrape('https://www.septa.org/schedules/trolley/')
+scrape('http://www.septa.org/schedules/bus/')
+scrape('http://www.septa.org/schedules/trolley/')
