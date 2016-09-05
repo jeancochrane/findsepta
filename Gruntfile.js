@@ -8,8 +8,12 @@ module.exports = function(grunt) {
 
 		watch: {
 			css: {
-				files: '*.css',
+				files: 'assets/css/styles.css',
 				tasks: ['postcss','csslint'],
+			},
+
+			cssafter: {
+				files: 'assets/css/styles-prefixed.css',
 				options: {
 					livereload: true
 				}
@@ -20,7 +24,7 @@ module.exports = function(grunt) {
 			},
 		
 			js: {
-				files: 'scripts/*.js',
+				files: 'assets/js/*.js',
 				tasks: ['jshint'],
 				options: {
 					livereload: true
@@ -37,11 +41,11 @@ module.exports = function(grunt) {
 		},
 
 		jshint: {
-			src: 'scripts/*.js'
+			src: 'assets/js/*.js'
 		},
 
 		csslint: {
-			src: ['*.css']
+			src: ['css/styles-prefixed.css']
 		},
 
 		postcss: {
@@ -55,15 +59,15 @@ module.exports = function(grunt) {
 			},
 
 			dist: {
-				src: 'styles.css',
-				dest: 'styles-prefixed.css'
+				src: 'assets/css/styles.css',
+				dest: 'assets/css/styles-prefixed.css'
 			}
 		},
 
 		processhtml: {
 			dist: {
 				files: {
-					'dist/index.html': ['index.html']
+					'dist/assets/index.html': ['assets/index.html']
 				}
 			}
 		},
@@ -76,7 +80,7 @@ module.exports = function(grunt) {
 			},
 			js: {
 				files: {
-					'dist/scripts.min.js': ['scripts/*.js']
+					'dist/scripts.min.js': ['assets/js/*.js']
 				}
 			}
 		},
@@ -87,8 +91,7 @@ module.exports = function(grunt) {
 			dist: {
 				files: [
 					{src: ['assets/**'], dest: 'dist/'},
-					{src: ['*.html', 'styles-prefixed.css'], dest: 'dist/'},
-					{src: ['about/**'], dest: 'dist/'}
+					{src: ['*.html', 'assets/styles-prefixed.css', 'normalize.css', 'scripts.min.js'], dest: 'dist/'},
 				]
 			}
 		},	

@@ -8,17 +8,17 @@ cherrypy.config.update({"log.screen": True})
 
 app = Bottle()
 busAPI = "http://www3.septa.org/api/TransitView/index.php?route="
-root = "."
-
-
-@app.route('/')
-def index():
-    return static_file("/index.html", root)
+root = "assets"
 
 
 @app.route('/about')
 def about():
     return static_file("/about.html", root)
+
+
+@app.route('/')
+def index():
+    return static_file("/index.html", root)
 
 
 @app.error(404)
@@ -67,7 +67,7 @@ def busdata(route):
 # DEV
 @app.route('/<filepath:path>')
 def static(filepath):
-    return static_file(filepath, root)
+    return static_file(filepath, ".")
 # ENDDEV
 
 # BUILD

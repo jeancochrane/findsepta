@@ -1,10 +1,10 @@
 var Route = (function() {
 	var name,
 		busesSourceObject,
-		stopsURL = 'assets/stops/',
-		lineURL = 'assets/lines/',
+		stopsURL = 'assets/data/stops/',
+		lineURL = 'assets/data/lines/',
 		busURL = 'busdata/',
-		extentURL = 'assets/extents/';
+		extentURL = 'assets/data/extents/';
 
 	var getStops = function() {
 		var id = name + "-stops";
