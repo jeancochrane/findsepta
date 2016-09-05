@@ -57,8 +57,13 @@ a {
 .form-container h1 {
   font-size: 3em;
   font-weight: bold;
-  margin-bottom:0.5em;
   display: block;
+}
+
+.form-container p {
+  font-size: 1.3em;
+  font-weight: 300;
+  text-align: center;
 }
 
 header {
@@ -146,6 +151,7 @@ form button:focus {
   align-items: center;
   justify-content: center;
   z-index: 2;
+  max-width: 300px;
   padding: 30px;
   border-radius: 10px;
   background: #ffffff;
@@ -205,6 +211,28 @@ h1 {
   select {
     display: block;
     margin-top: 6px;
+  }
+
+  .form-container {
+    margin-bottom: auto;
+    margin-top: auto;
+    max-width: 170px;
+    padding: 40px 60px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 6px 6px 50px 0 rgba(138,138,138,0.74);
+  }
+
+  .form-container h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    display: block;
+  }
+
+  .form-container p {
+    font-size: 1.1em;
+    font-weight: 300;
+    text-align: center;
   }
 
   .route-selection {

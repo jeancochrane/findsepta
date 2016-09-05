@@ -15,6 +15,7 @@ var Tracker = (function() {
 
     //Restyle form and move it away from the map
         $('header').hide();
+        $('.explainer').hide();
         $('#clearButton').show();
         $('.container h1').hide();
         $('.form-container').addClass('route-selection').removeClass('form-container');
