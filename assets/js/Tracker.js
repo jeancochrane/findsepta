@@ -16,6 +16,7 @@ var Tracker = (function() {
     //Restyle form and move it away from the map
         $('header').hide();
         $('.explainer').hide();
+        $('.custom-combobox-input').addClass('input-fix');
         $('#clearButton').show();
         $('.container h1').hide();
         $('.form-container').addClass('route-selection').removeClass('form-container');
