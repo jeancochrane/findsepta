@@ -1,3 +1,5 @@
 node_modules/*
 *.map
 dist/*
+.python-version
+.DS_Store
