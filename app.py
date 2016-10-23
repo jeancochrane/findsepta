@@ -21,6 +21,11 @@ def index():
     return static_file("/index.html", root)
 
 
+@app.route('/debugger')
+def debugger():
+    return static_file("/debugger.html", root)
+
+
 @app.error(404)
 def error404(error):
     return "Sorry! Nothing here!"
