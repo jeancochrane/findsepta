@@ -2,7 +2,8 @@ var Route = (function() {
 	var name,
 		busesSourceObject,
 		stopsURL = 'assets/data/stops/',
-		lineURL = 'assets/data/lines/',
+		lineURL = 'assets/data/lines/', // SEPTA's routelines
+		editedLineURL = 'assets/data/new_lines/' // our edited routelines
 		busURL = 'busdata/',
 		extentURL = 'assets/data/extents/';
 
@@ -106,6 +107,8 @@ var Route = (function() {
 
 
 	return {
+		lineURL: lineURL,
+		editedLineURL: editedLineURL,
 		updateBuses: updateBuses,
 		getBuses: getBuses,
 		getLine: getLine,
